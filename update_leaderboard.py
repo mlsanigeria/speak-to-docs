@@ -127,7 +127,7 @@ A heartfelt **thank you** to all our fantastic contributors for their hard work 
 
 ---
 
-*Want to see your name on the leaderboard? Contribute to our project on [GitHub](https://github.com/mlsanigeria/AI-Hacktober-MLSA) and make an impact!*
+*Want to see your name on the leaderboard? Contribute to our project on [GitHub](https://github.com/mlsanigeria/speak-to-docs) and make an impact!*
 
 """.format("\n".join(
     f"| {entry['position']} | {entry['rank']} | {entry['avi']} | {entry['contributor']} | {entry['merged_prs']} |"
@@ -138,10 +138,6 @@ A heartfelt **thank you** to all our fantastic contributors for their hard work 
 with open("LEADERBOARD.md", "w") as readme_file:
     readme_file.write(leaderboard_content)
     print("successfully updated LEADERBOARD.md")
-
-
-
-
 
 
 # filter only the top 10 contributors
