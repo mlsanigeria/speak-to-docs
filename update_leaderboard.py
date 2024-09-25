@@ -34,6 +34,7 @@ def initialize_api():
         if response.status_code == 200:
             # Parse the JSON response
             pull_requests = response.json()
+            print("Pull requests: ", pull_requests)
             if len(pull_requests) == 0:
             # No more PRs to fetch, break out of the loop
                 break
