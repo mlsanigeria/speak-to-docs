@@ -7,7 +7,7 @@ import os
 def initialize_api():
     # Define your GitHub repository and authentication token
     repository_owner = "mlsanigeria"
-    repository_name = "AI-Hacktober-MLSA"
+    repository_name = "speak-to-docs"
     api_token = os.environ.get("API_TOKEN")
 
     # Define the GitHub API endpoint for pull requests
@@ -54,7 +54,7 @@ def get_sorted_pr():
     merged_prs_count_by_user = defaultdict(int)
     avi = {}
     # Create a list of contributors to exempt
-    exempt = ["Odion-Sonny", "Tutu6790", "Sammybams", "FelixFrankFelix", "Olamilekan002", "AjibolaMatthew1", "salimcodes"]
+    exempt = []
 
     # Iterate through the pull_requests list
     for pr in response:
