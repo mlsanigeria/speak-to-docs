@@ -48,5 +48,5 @@ jobs:
           git pull
           git add .
           git commit -m "Updated leaderboard"
-          git remote set-url origin https://$API_TOKEN@github.com/mlsanigeria/AI-Hacktober-MLSA.git
+          git remote set-url origin https://$API_TOKEN@github.com/mlsanigeria/speak-to-docs.git
           git push
