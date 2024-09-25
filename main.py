@@ -36,3 +36,14 @@ openai_embeddings: OpenAIEmbeddings = OpenAIEmbeddings(
 
 # LLM - Azure OpenAI
 llm = ChatOpenAI(temperature = 0.3, openai_api_key = os.getenv("API_KEY"), openai_api_base = os.getenv("ENDPOINT"), model_name="gpt-35-turbo", engine="Voicetask")
+
+#sidebar configuration
+with st.sidebar:
+    st.subheader("Upload your document")
+    uploaded_files = st.sidebar.file_uploader("Choose files", accept_multiple_files=True)
+
+    message = st.container(height = 300)
+    if prompt:=st.chat_input("Enter your query"):
+        message.chat_message("user").write(prompt)
+
+    
