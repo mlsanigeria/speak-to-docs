@@ -11,7 +11,6 @@ def initialize_api():
     repository_owner = "mlsanigeria"
     repository_name = "speak-to-docs"
     api_token = os.environ.get("API_TOKEN")
-    print(f"API TOKEN: {api_token}")  # Debug: print API token
 
     # Define the GitHub API endpoint for pull requests
     api_url = f"https://api.github.com/repos/{repository_owner}/{repository_name}/pulls"
