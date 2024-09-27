@@ -50,7 +50,7 @@ We have exciting prizes for our top contributors, including LinkedIn Premium vou
 
 If you have questions, need assistance, or want to discuss the projects, feel free to reach out to us:
 
-- Join our community on [Whatsapp](WHATSAPP_COMMUNTIES.md).
+- Join our community on [Whatsapp](WHATSAPP_COMMUNITIES.md).
 - Connect with us on [Twitter](https://twitter.com/mlsanigeria).
 
 ## **📣 Help Us Spread the Word**
