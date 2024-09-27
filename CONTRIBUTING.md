@@ -1,6 +1,6 @@
 # Contributing to the Hacktoberfest Repository
 
-Welcome to the Speak-To-Docs project repository put together by the Microsoft Learn Student Ambassadors towards Hacktoberfest 2024! We appreciate your interest in contributing to our projects. Please read this guide to understand how you can participate and make meaningful contributions.
+Welcome to the **Speak-To-Docs** project repository, organized by the Microsoft Learn Student Ambassadors for Hacktoberfest 2024! This repository is dedicated to building and enhancing a **Speech-Enabled Retrieval-Augmented Generation (RAG) Solution**, dubbed "Speak-To-Docs." We're excited to have you contribute and improve this innovative project.
 
 ## How to Install Dependencies and Work on the Project Locally
 
@@ -42,19 +42,20 @@ Welcome to the Speak-To-Docs project repository put together by the Microsoft Le
    pip install -r requirements.txt
    ```
 
-   Add the virtual environment to Jupyter Kernel (if contributing to Projects 1 and/or 3):
+   Add the virtual environment to Jupyter Kernel if necessary:
 
    ```bash
    python -m ipykernel install --user --name=speak-to-docs
    ```
 
-3. **Work on Your Contributions:**
+3. **Work on the Project:**
 
-   - For **Project 1: SPEAK-TO-DOCS RAG PROJECT**, follow the guidelines in `Project_1` directory.
+   - This repository is specifically for the **Speak-To-Docs** RAG project. Explore the project structure and check the **Issues** tab for tasks or bugs that you can address. 
+   - You are encouraged to review the current implementation and contribute new features or improvements to the **Speech-Enabled RAG Solution**.
 
-4. **Commit and Push:**
+4. **Commit and Push Your Changes:**
 
-   After making changes, commit them and push to your forked repository.
+   Once your contributions are ready, commit your changes and push them to your forked repository.
 
    ```bash
    git add .
@@ -62,49 +63,34 @@ Welcome to the Speak-To-Docs project repository put together by the Microsoft Le
    git push
    ```
 
-5. **Create a Pull Request:**
+5. **Submit a Pull Request:**
 
-   Create a pull request to merge your changes into the main repository.
+   After pushing your changes, submit a pull request to merge them into the main repository. Make sure to include a clear and concise description of what your contribution entails.
 
-## 🏢 Project 1: SPEAK-TO-DOCS RAG PROJECT
+## How You Can Contribute:
 
-Contribute to RAG project tasks:
+1. Review the existing project code and issues to understand the functionality.
+2. Find an open issue that matches your skills or propose a new feature.
+3. Work on your contribution, test it thoroughly, and make sure it aligns with the project goals.
+4. Submit your pull request with a clear explanation of your contribution.
 
-### Contribution Guidelines:
+## ✔️ General Contribution Guidelines
 
-1. Clone the repository and follow the [local setup instructions](#how-to-install-dependencies-and-work-on-the-project-locally).
+- Follow best practices for coding, including writing clean and well-documented code.
+- Provide meaningful commit messages and detailed pull request descriptions.
+- Respectfully collaborate and communicate with other contributors.
+- Feel free to ask questions or seek guidance from project maintainers if needed.
 
-2. Create a folder under the `Project_1` directory following the naming convention:
-   - Folder Name: `speak_to_docs_{GitHub_Username}`
+**Happy hacking! We can't wait to see your amazing contributions!**
 
-   For example, if your GitHub username is `octocat`, your folder should be named `speak_to_docs_octocat`.
-
-3. Work on project tasks in your notebook.
-
-4. The team will evaluate the model's performance using a separate test dataset.
-
-5. Make a pull request when ready.
-
-
-## ✔️ General Guidelines
-
-- Ensure your code is well-documented and follows best practices.
-
-- Provide a descriptive pull request explaining the purpose of your changes.
-
-- Be respectful and collaborative. Feel free to ask questions and seek assistance from other contributors or maintainers.
-
-- Happy hacking! We appreciate your contributions to make this project better.
-
-If you have any questions or need assistance, please feel free to reach out to us.
-
-**Happy Hacking!**
+---
 
 ## 🔗 Links to Resources
 
 1. [How to Do Your First Pull Request](https://youtu.be/nkuYH40cjo4?si=Cb6U2EKVR_Ns4RLw)
 2. [Azure Document Intelligence](https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/overview?wt.mc_id=studentamb_271760)
-3. [Process and Translate Speech with Azure AI Speech Services](https://learn.microsoft.com/en-gb/training/paths/process-translate-speech-azure-cognitive-speech-services/?wt.mc_id=studentamb_217190)
-4. [How to Translate Text with Azure AI Translator in Python](https://learn.microsoft.com/en-us/azure/ai-services/translator/quickstart-text-rest-api?tabs=python#translate-text?wt.mc_id=studentamb_217190)
-5. [Azure Speech Service documentation](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/?wt.mc_id=studentamb_217190)
-6. [Customizing an LLM on Azure](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/customizing-llms?wt.mc_id=studentamb_271760)
+3. [Use the fast transcription API (preview) with Azure AI Speech](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/fast-transcription-create?wt.mc_id=studentamb_217190)
+4. [Quickstart: Convert text to speech](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/get-started-text-to-speech?pivots=programming-language-python?wt.mc_id=studentamb_217190)
+5. [Fundamentals of Azure OpenAI Service](https://learn.microsoft.com/en-us/training/modules/explore-azure-openai/?wt.mc_id=studentamb_217190)
+6. [Azure Speech Service documentation](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/?wt.mc_id=studentamb_217190)
+7. [Develop Generative AI solutions with Azure OpenAI Service](https://learn.microsoft.com/en-us/training/paths/develop-ai-solutions-azure-openai/?wt.mc_id=studentamb_217190)
