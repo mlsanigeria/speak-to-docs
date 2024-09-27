@@ -1,6 +1,6 @@
 # Contributing to the Hacktoberfest Repository
 
-Welcome to the Hacktoberfest repository organized by the Microsoft Learn Student Ambassadors in Nigeria! We appreciate your interest in contributing to our projects. Please read this guide to understand how you can participate and make meaningful contributions.
+Welcome to the Speak-To-Docs project repository put together by the Microsoft Learn Student Ambassadors towards Hacktoberfest 2024! We appreciate your interest in contributing to our projects. Please read this guide to understand how you can participate and make meaningful contributions.
 
 ## How to Install Dependencies and Work on the Project Locally
 
@@ -10,10 +10,8 @@ Welcome to the Hacktoberfest repository organized by the Microsoft Learn Student
 
    ```bash
    # Replace {user_name} with your GitHub username
-   git clone --depth 1 https://github.com/{user_name}/speak-to-docs.git
+   git clone https://github.com/{user_name}/speak-to-docs.git
    ```
-
-   > This ensures you clone only the most recent commit and all files to avoid unnecessary commit history (image files that have been resized).
 
 2. **Set Up Virtual Environment:**
 
