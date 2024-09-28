@@ -8,7 +8,7 @@ This challenge focuses on two main tracks:
 
 1. **Speech-Enabled RAG Solution**: A project leveraging Microsoft Azure AI Services to build a Retrieval-Augmented Generation (RAG) solution where users can upload any document and interact with it through audio. The system allows for both audio input and audio responses, providing a seamless voice-based interaction with your documents.
 
-2. [**Crime Trend and Fatalities Prediction in Nigeria**](https://github.com/mlsanigeria/nigeria-crime-trends): This project aims to analyze crime trends in Nigeria and build one machine learning model to predict crime-related fatalities. Participants will perform a full analysis of the dataset, including data cleaning, exploratory data analysis (EDA), and model building. An existing analysis at the Africa level can be used as a reference for participants. You can check out the notebook here for ideas on how to conduct a comprehensive analysis for Nigeria.
+2. [**Crime Trend and Fatalities Prediction in Nigeria**](https://github.com/mlsanigeria/nigeria-crime-trends): This project aims to analyze crime trends in Nigeria and build one machine learning model to predict crime-related fatalities. Participants will perform a full analysis of the dataset from [ACLED](https://acleddata.com/), including data cleaning, exploratory data analysis (EDA), and model building. An existing analysis at the Africa level can be used as a reference for participants. You can check out the notebook here for ideas on how to conduct a comprehensive analysis for Nigeria.
 
 ## **How to Participate**
 
