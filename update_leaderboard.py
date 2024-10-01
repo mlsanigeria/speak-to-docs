@@ -4,7 +4,7 @@ import requests
 from collections import defaultdict
 import os
 
-print("Updating the GitHub Leaderboard...")
+print("Updating the GiHtub Leaderboard...")
 
 def initialize_api():
     # Define your GitHub repository and authentication token
