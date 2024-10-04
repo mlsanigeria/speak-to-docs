@@ -21,7 +21,7 @@ This challenge focuses on two main tracks:
 4. **Submit a Pull Request**: Share your contributions by submitting pull requests. Please follow our contribution guidelines outlined in the project's README.
 
 ### **Still Confused About How to Get Started? 🤔**
-Watch the recording of our info session on how to participate in this challenge on [YouTube](https://www.youtube.com/watch?v=7QKdghxH06M&t=1192s).
+Watch the recording of our info session on how to participate in this challenge on [YouTube](https://youtu.be/4CJOr4o1MVI?si=D7lHnt6N0kG8DQJH).
 
 ## **🏆 Leaderboard**
 
