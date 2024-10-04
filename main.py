@@ -50,7 +50,19 @@ with st.sidebar:
         if len(st.session_state.uploaded_files) > 2:
             st.error("You can only upload a maximum of 2 documents.")
             st.session_state.uploaded_files = None
+            
         else:
+            # 200MB limit
+            limit = 200
+            for file in st.session_state.uploaded_files:
+                # convert bytes to MB
+                size_mb = (file.size / (1024 * 1024))
+                if size_mb > limit:
+                    st.error(f"{file.name} is too large ({size_mb:.2f} MB). Please upload a file less than {limit} MB.")
+                    st.session_state.uploaded_files = None
+                    break
+                
+        if st.session_state.uploaded_files:
             st.success(f"{len(st.session_state.uploaded_files)} file(s) uploaded.")
 
 #chat area
