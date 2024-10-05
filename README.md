@@ -8,7 +8,7 @@ This challenge focuses on two main tracks:
 
 1. **Speech-Enabled RAG Solution**: A project leveraging Microsoft Azure AI Services to build a Retrieval-Augmented Generation (RAG) solution where users can upload any document and interact with it through audio. The system allows for both audio input and audio responses, providing a seamless voice-based interaction with your documents.
 
-2. **Pure Machine Learning (ML) Projects**: Explore the world of ML without cloud services, focusing on building ground-up solutions using Python. The specific concept for this track is still in development, and participants will contribute to fleshing it out.
+2. [**Crime Trend and Fatalities Prediction in Nigeria**](https://github.com/mlsanigeria/nigeria-crime-trends): This project aims to analyze crime trends in Nigeria and build one machine learning model to predict crime-related fatalities. Participants will perform a full analysis of the dataset from [ACLED](https://acleddata.com/), including data cleaning, exploratory data analysis (EDA), and model building. An existing analysis at the Africa level can be used as a reference for participants. You can check out the notebook here for ideas on how to conduct a comprehensive analysis for Nigeria.
 
 ## **How to Participate**
 
@@ -21,7 +21,7 @@ This challenge focuses on two main tracks:
 4. **Submit a Pull Request**: Share your contributions by submitting pull requests. Please follow our contribution guidelines outlined in the project's README.
 
 ### **Still Confused About How to Get Started? 🤔**
-Watch the recording of our info session on how to participate in this challenge on [YouTube](https://www.youtube.com/watch?v=7QKdghxH06M&t=1192s).
+Watch the recording of our info session on how to participate in this challenge on [YouTube](https://youtu.be/4CJOr4o1MVI?si=D7lHnt6N0kG8DQJH).
 
 ## **🏆 Leaderboard**
 
@@ -34,7 +34,8 @@ Thank you to all our fantastic contributors for their hard work and dedication! 
 
 | S/N | Rank || Contributor | Merged PRs |
 |--| ---- | -- |----------- | ---------- |
-| 1 | 🥇 | <img src='https://avatars.githubusercontent.com/u/108756842?v=4' alt='Avatar' width='30' height='30'> | [Odeyiany2](https://github.com/Odeyiany2) | 1 |
+| 1 | 🥇 | <img src='https://avatars.githubusercontent.com/u/71222572?v=4' alt='Avatar' width='30' height='30'> | [Nalito](https://github.com/Nalito) | 2 |
+| 2 | 🥈 | <img src='https://avatars.githubusercontent.com/u/108756842?v=4' alt='Avatar' width='30' height='30'> | [Odeyiany2](https://github.com/Odeyiany2) | 1 |
 
 Thank you to all our fantastic contributors for their hard work and dedication!
 
@@ -60,14 +61,3 @@ Help us make this initiative a success by sharing it with your network! Use the 
 ## **Happy Hacking! 🎉**
 
 Thank you for being part of the Hacktoberfest Open Source Challenge. Your contributions make a difference, and together, we can create amazing open-source solutions. Let's code, collaborate, and celebrate open source! 🚀
-
----
-
-![MLSA Nigeria & Hacktoberfest Logo](https://github.com/mlsanigeria/AI-Hacktober-MLSA/assets/64220829/ba0153a7-df46-4a07-8f32-7d11e2295046)
-
-
-
-
-
-
-
