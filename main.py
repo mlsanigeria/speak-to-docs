@@ -38,6 +38,9 @@ openai_embeddings: OpenAIEmbeddings = OpenAIEmbeddings(
 llm = ChatOpenAI(temperature = 0.3, openai_api_key = os.getenv("API_KEY"), openai_api_base = os.getenv("ENDPOINT"), model_name="gpt-35-turbo", engine="Voicetask")
 
 #sidebar configuration
+#import the file check functions
+from src.rag_functions import *
+
 if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = None
 
@@ -51,11 +54,33 @@ with st.sidebar:
             st.error("You can only upload a maximum of 2 documents.")
             st.session_state.uploaded_files = None
         else:
-            st.success(f"{len(st.session_state.uploaded_files)} file(s) uploaded.")
+            #set a valid upload to True
+            valid_file = True
+            for file in st.session_state.uploaded_files:
+                if allowed_files(file.name):
+                  num_pages = file_check_num(file)
+                  if num_pages > 50:
+                      st.error(f"{file.name} exceeds the 50-page limit (has {num_pages} pages).")
+                      valid_file = False
+                      break
+                else:
+                      st.error(f"{file.name} is not a valid file type.")
+                      valid_file = False
+                      break
+
+            if valid_file:
+                st.success(f"{len(st.session_state.uploaded_files)} file(s) uploaded successfully.")
+    else:
+        st.session_state.uploaded_files = None
+                  
+              
+    
 
 #chat area
 message = st.container()
 if prompt:=st.chat_input("Enter your query"):
     message.chat_message("user").write(prompt)
+
+
 
     
