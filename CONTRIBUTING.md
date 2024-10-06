@@ -67,6 +67,21 @@ Welcome to the **Speak-To-Docs** project repository, organized by the Microsoft 
 
    After pushing your changes, submit a pull request to merge them into the main repository. Make sure to include a clear and concise description of what your contribution entails.
 
+## Project Structure:
+- The **Speech-Enabled RAG Solution** is a voice-powered interface that allows users to engage with their documents throuch speech. Look at it as a model that explains a document you want to read.
+
+The project is structured as follows:
+- **speech_to_docs**: This is the main directory for the project.
+- **speech_to_docs/src/data**: This directory contains the dataset used for training the model.
+- **speech_to_docs/src/model**: This directory contains the model architecture and training code.
+- **speech_to_docs/src/utils**: This directory contains utility functions used throughout the project.
+- **speech_to_docs/requirements.txt**: This file lists the dependencies required to run the project.
+- **speech_to_docs/README.md**: This file contains information about the project, including this guide
+- **speech_to_docs/LICENSE**: This file contains the license information for the project.
+- **speech_to_docs/CONTRIBUTING.md**: This file contains information about contributing to the project
+- **speech_to_docs/ISSUES.md**: This file contains information about the issues in the project
+
+
 ## How You Can Contribute:
 
 1. Review the existing project code and issues to understand the functionality.
