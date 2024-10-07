@@ -68,12 +68,12 @@ Welcome to the **Speak-To-Docs** project repository, organized by the Microsoft 
    After pushing your changes, submit a pull request to merge them into the main repository. Make sure to include a clear and concise description of what your contribution entails.
 
 ## Project Structure:
-- The **Speech-Enabled RAG Solution** is a voice-powered interface that allows users to engage with their documents throuch speech. Look at it as a model that explains a document you want to read.
+The **Speech-Enabled RAG Solution** is a voice-powered interface that allows users to engage with their documents throuch speech. Look at it as a model that explains a document you want to read.
 
 The project is structured as follows:
 - **speech_to_docs**: This is the main directory for the project.
-- **speech_to_docs/src**: This directory contains all the files that will be used for training the model.
-- **speech_to_docs/src/rag_functions.py**: This file contains the function that checks for uploaded files compatibility, making sure it doesn't exceed 50 pages limit. .
+- **speech_to_docs/src**: This directory contains all the files that will house all the functionalities of the project: Speech transcription and synthesis, RAG model Solution and document reading..
+- **speech_to_docs/src/rag_functions.py**: This file contains the function that checks for uploaded file compatibility, making sure it doesn't exceed 50 pages limit as well as the RAG model solution functionalities.
 - **speech_to_docs/src/speech_io.py**: This files handles the speech_to_text/ text_to_speech function of the model by using **Azure Cognitive Services: Speech Transcription** (Speech-to-Text) and **Speech Synthesis** (Text-to-Speech).
 - **speech_to_docs/requirements.txt**: This file lists the dependencies required to run the project.
 - **speech_to_docs/README.md**: This file contains information about the project, including this guide
