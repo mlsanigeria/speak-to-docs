@@ -72,14 +72,15 @@ Welcome to the **Speak-To-Docs** project repository, organized by the Microsoft 
 
 The project is structured as follows:
 - **speech_to_docs**: This is the main directory for the project.
-- **speech_to_docs/src/data**: This directory contains the dataset used for training the model.
-- **speech_to_docs/src/model**: This directory contains the model architecture and training code.
-- **speech_to_docs/src/utils**: This directory contains utility functions used throughout the project.
+- **speech_to_docs/src**: This directory contains all the files that will be used for training the model.
+- **speech_to_docs/src/rag_functions.py**: This file contains the function that checks for uploaded files compatibility, making sure it doesn't exceed 50 pages limit. .
+- **speech_to_docs/src/speech_io.py**: This files handles the speech_to_text/ text_to_speech function of the model by using **Azure Cognitive Services: Speech Transcription** (Speech-to-Text) and **Speech Synthesis** (Text-to-Speech).
 - **speech_to_docs/requirements.txt**: This file lists the dependencies required to run the project.
 - **speech_to_docs/README.md**: This file contains information about the project, including this guide
 - **speech_to_docs/LICENSE**: This file contains the license information for the project.
 - **speech_to_docs/CONTRIBUTING.md**: This file contains information about contributing to the project
-- **speech_to_docs/ISSUES.md**: This file contains information about the issues in the project
+- **speech_to_docs/CODE_OF_CONDUCT.md**: This file contains information about the purpose, policy and behaviour expected of the project.
+- **speech_to_docs/LEADERBOARD.md**: This file contains information about the leaderboard (ranking of people with the highest PRs).
 
 
 ## How You Can Contribute:
