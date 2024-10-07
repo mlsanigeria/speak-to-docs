@@ -4,6 +4,7 @@
 /etc/
 /include/
 /share/
+.idea/
 pyvenv.cfg
 *.pyc
 *__pycache__/
