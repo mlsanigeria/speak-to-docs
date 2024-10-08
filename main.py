@@ -12,6 +12,9 @@ import openai
 
 # Get Configuration Settings
 from dotenv import load_dotenv
+
+from src.speech_to_text import speech_to_text
+
 load_dotenv()
 
 # Configure OpenAI API using Azure OpenAI
@@ -80,6 +83,16 @@ with st.sidebar:
 message = st.container()
 if prompt:=st.chat_input("Enter your query"):
     message.chat_message("user").write(prompt)
+    
+audio_value = st.experimental_audio_input("Record a voice message")
+if audio_value:
+    with open("audio.wav", "wb") as f:
+        f.write(audio_value.getbuffer())
+        speech_text = speech_to_text("audio.wav")
+        if speech_text:
+            message.chat_message("user").write(speech_text)
+        else:
+            message.chat_message("user").write("Sorry, I couldn't transcribe your audio. Please try again.")
 
 
 
