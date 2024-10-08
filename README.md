@@ -36,8 +36,9 @@ Thank you to all our fantastic contributors for their hard work and dedication! 
 |--| ---- | -- |----------- | ---------- |
 | 1 | 🥇 | <img src='https://avatars.githubusercontent.com/u/71222572?v=4' alt='Avatar' width='30' height='30'> | [Nalito](https://github.com/Nalito) | 2 |
 | 2 | 🥇 | <img src='https://avatars.githubusercontent.com/u/108756842?v=4' alt='Avatar' width='30' height='30'> | [Odeyiany2](https://github.com/Odeyiany2) | 2 |
-| 3 | 🥈 | <img src='https://avatars.githubusercontent.com/u/46717453?v=4' alt='Avatar' width='30' height='30'> | [jatingarg36](https://github.com/jatingarg36) | 1 |
-| 4 | 🥈 | <img src='https://avatars.githubusercontent.com/u/138301475?v=4' alt='Avatar' width='30' height='30'> | [PetJs](https://github.com/PetJs) | 1 |
+| 3 | 🥈 | <img src='https://avatars.githubusercontent.com/u/11654054?v=4' alt='Avatar' width='30' height='30'> | [AlexanderSanin](https://github.com/AlexanderSanin) | 1 |
+| 4 | 🥈 | <img src='https://avatars.githubusercontent.com/u/46717453?v=4' alt='Avatar' width='30' height='30'> | [jatingarg36](https://github.com/jatingarg36) | 1 |
+| 5 | 🥈 | <img src='https://avatars.githubusercontent.com/u/138301475?v=4' alt='Avatar' width='30' height='30'> | [PetJs](https://github.com/PetJs) | 1 |
 
 Thank you to all our fantastic contributors for their hard work and dedication!
 
