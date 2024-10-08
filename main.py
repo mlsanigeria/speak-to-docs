@@ -55,6 +55,7 @@ with st.sidebar:
             st.session_state.uploaded_files = None
         else:
             #set a valid upload to True
+            valid_files = []
             valid_file = True
             for file in st.session_state.uploaded_files:
                 if allowed_files(file.name):
@@ -63,13 +64,16 @@ with st.sidebar:
                       st.error(f"{file.name} exceeds the 50-page limit (has {num_pages} pages).")
                       valid_file = False
                       break
+                  else:
+                      valid_files.append(file)
                 else:
                       st.error(f"{file.name} is not a valid file type.")
                       valid_file = False
                       break
 
-            if valid_file:
-                st.success(f"{len(st.session_state.uploaded_files)} file(s) uploaded successfully.")
+            if valid_file and valid_files:
+                extraction_results = extract_contents_from_doc(valid_files, "temp_dir")
+                st.success(f"{len(st.session_state.uploaded_files)} file(s) uploaded and processed successfully.")
     else:
         st.session_state.uploaded_files = None
                   
