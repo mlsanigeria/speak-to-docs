@@ -9,3 +9,4 @@ pyvenv.cfg
 *.pyc
 *__pycache__/
 *.DS_Store
+*.venv/
