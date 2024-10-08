@@ -93,6 +93,7 @@ if audio_value:
             message.chat_message("user").write(speech_text)
         else:
             message.chat_message("user").write("Sorry, I couldn't transcribe your audio. Please try again.")
+        f.close()
 
 
 
