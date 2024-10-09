@@ -13,7 +13,7 @@ import openai
 # Get Configuration Settings
 from dotenv import load_dotenv
 
-from src.speech_to_text import speech_to_text
+from src.speech_io import transcribe_audio
 
 load_dotenv()
 
@@ -88,12 +88,13 @@ audio_value = st.experimental_audio_input("Record a voice message")
 if audio_value:
     with open("audio.wav", "wb") as f:
         f.write(audio_value.getbuffer())
-        speech_text = speech_to_text("audio.wav")
-        if speech_text:
-            message.chat_message("user").write(speech_text)
-        else:
-            message.chat_message("user").write("Sorry, I couldn't transcribe your audio. Please try again.")
         f.close()
+        
+    speech_text = transcribe_audio("audio.wav")
+    if speech_text:
+        message.chat_message("user").write(speech_text)
+    else:
+        message.chat_message("user").write("Sorry, I couldn't transcribe your audio. Please try again.")
 
 
 
