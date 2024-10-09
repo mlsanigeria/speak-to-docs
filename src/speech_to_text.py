@@ -30,21 +30,7 @@ data = {
     }
     '''
 }
-# "channels": [0, 1]
 
-# Make the POST request
-# response = requests.post(url, headers=headers, files=files, data=data)
-
-# # Check the response
-# if response.status_code == 200:
-#     print('Success!')
-#     print(response.json())
-#     print(response.json()['combinedPhrases'][0]['text'])
-# else:
-#     print('Error:', response.status_code)
-#     print("\n" + response.text)
-#     error_message = "Error: " + str(response.status_code) + "\n" + response.text
-#     raise Exception(error_message)
 
 
 
