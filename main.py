@@ -6,6 +6,7 @@ import os
 # Langchain components
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
+from langchain.embeddings import OpenAIEmbeddings
 
 # Add OpenAI library
 import openai
@@ -21,9 +22,6 @@ def get_llm() -> ChatOpenAI:
     openai.api_base = os.getenv("ENDPOINT")
     openai.api_type = "azure"  # Necessary for using the OpenAI library with Azure OpenAI
     openai.api_version = os.getenv("OPENAI_API_VERSION")  # Latest / target version of the API
-
-    # Implementation
-    from langchain.embeddings import OpenAIEmbeddings
 
     # OpenAI Settings
     model_deployment = "text-embedding-ada-002"
