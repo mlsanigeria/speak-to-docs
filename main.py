@@ -78,13 +78,21 @@ with st.sidebar:
     else:
         st.session_state.uploaded_files = None
                   
-              
-    
 
 #chat area
+def send_message():
+    prompt = st.session_state.prompt
+    st.session_state.messages.append(('user', prompt))
+
+if 'messages' not in st.session_state:
+    st.session_state.messages = []
+
 message = st.container()
-if prompt:=st.chat_input("Enter your query"):
-    message.chat_message("user").write(prompt)
+st.chat_input("Enter your query", key='prompt', on_submit=send_message)
+
+with message:
+    for role, text in st.session_state.messages:
+        st.chat_message(role).write(text)
 
 
 
