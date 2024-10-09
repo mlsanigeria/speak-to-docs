@@ -67,9 +67,9 @@ def extract_contents_from_doc(files, temp_dir):
     Args: files(uploaded by the user), temp_dir(to store the extracted contents from the file(s))
     Returns a directory containing a file stored with the document's extracted content
     """
-    # Constants for Azure Speech Services
-    DI_ENDPOINT = os.getenv("DI_ENDPOINT")
-    DOCUMENT_INTELLIGENCE_KEY = os.getenv('SUBSCRIPTION_KEY')
+    # Constants for Azure Document Intelligence 
+    DI_ENDPOINT = os.getenv("DOCUMENT_INTELLIGENCE_ENDPOINT") #gotten from the azure document intelligence resource created
+    DOCUMENT_INTELLIGENCE_KEY = os.getenv('DOCUMENT_INTELLIGENCE_SUBSCRIPTION_KEY') #gotten from the resource created in microsoft azure
 
     document_intelligence_client = DocumentAnalysisClient(
         endpoint=DI_ENDPOINT,
@@ -101,10 +101,10 @@ def extract_contents_from_doc(files, temp_dir):
                 for line in page.lines:
                     extracted_content += line.content + "\n"
                 
-            #secruing the filename and defining a patth for the extract content
+            #securing the filename and defining a path for the extracted content
             filename = secure_filename(file.name)
             base, ext = os.path.splitext(filename)
-            extracted_filename = f"{base}_extracted.txt"
+            extracted_filename = f"{base}_extracted.{ext}"
             file_path = os.path.join(temp_dir, extracted_filename)
 
             # Save the extracted content to a text file
