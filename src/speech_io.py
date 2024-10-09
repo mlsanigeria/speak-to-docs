@@ -9,7 +9,6 @@ load_dotenv()
 # Constants for Azure Speech Services
 SPEECH_REGION = os.getenv("SPEECH_REGION")
 SPEECH_KEY = os.getenv("SPEECH_KEY")
-SUBSCRIPTION_KEY = os.getenv('SUBSCRIPTION_KEY')
 
 # API endpoint for speech-to-text
 STT_URL = f"https://eastus.api.cognitive.microsoft.com/speechtotext/transcriptions:transcribe?api-version=2024-05-15-preview"
@@ -29,13 +28,12 @@ def transcribe_audio(audio_file_path):
     """
     # Set up headers with subscription key
     headers = {
-        'Ocp-Apim-Subscription-Key': SUBSCRIPTION_KEY,
+        'Ocp-Apim-Subscription-Key': SPEECH_KEY,
         'Accept': 'application/json'
     }
 
     # Prepare the request data
-    with open(audio_file_path, 'rb') as audio_file:
-        files = {'audio': audio_file}
+    
         
     data = {
         'definition': '''
@@ -49,14 +47,18 @@ def transcribe_audio(audio_file_path):
     # "channels": [0, 1]
 
     try:
-        # Make the POST request to the API
-        response = requests.post(STT_URL, headers=headers, files=files, data=data)
-        response.raise_for_status()  # Raise an exception for bad status codes
-        
-        result = response.json()
-        transcription = result['combinedPhrases'][0]['text']
-        return transcription
-    
+        with open(audio_file_path, 'rb') as audio_file:
+            files = {'audio': audio_file}
+            # Make the POST request to the API
+            response = requests.post(STT_URL, headers=headers, files=files, data=data)
+            response.raise_for_status()  # Raise an exception for bad status codes
+            
+            result = response.json()
+            transcription = result['combinedPhrases'][0]['text']
+            
+            audio_file.close()
+            return transcription
+
     except requests.exceptions.RequestException as e:
         error_message = f"Transcription failed: {str(e)}\nResponse: {response.text if 'response' in locals() else 'No response'}"
         raise Exception(error_message)

@@ -13,6 +13,9 @@ import openai
 
 # Get Configuration Settings
 from dotenv import load_dotenv
+
+from src.speech_io import transcribe_audio
+
 load_dotenv()
 
 @st.cache_resource
@@ -90,6 +93,22 @@ if 'messages' not in st.session_state:
     st.session_state.messages = []
 
 message = st.container()
+if prompt:=st.chat_input("Enter your query"):
+    message.chat_message("user").write(prompt)
+    
+audio_value = st.experimental_audio_input("Record a voice message")
+if audio_value:
+    with open("audio.wav", "wb") as f:
+        f.write(audio_value.getbuffer())
+        f.close()
+        
+    speech_text = transcribe_audio("audio.wav")
+    if speech_text:
+        message.chat_message("user").write(speech_text)
+    else:
+        message.chat_message("user").write("Sorry, I couldn't transcribe your audio. Please try again.")
+
+        
 st.chat_input("Enter your query", key='prompt', on_submit=send_message)
 
 with message:
