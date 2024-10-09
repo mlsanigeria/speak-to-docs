@@ -6,6 +6,7 @@ import os
 # Langchain components
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
+from langchain.embeddings import OpenAIEmbeddings
 
 # Add OpenAI library
 import openai
@@ -14,28 +15,30 @@ import openai
 from dotenv import load_dotenv
 load_dotenv()
 
-# Configure OpenAI API using Azure OpenAI
-openai.api_key = os.getenv("API_KEY")
-openai.api_base = os.getenv("ENDPOINT")
-openai.api_type = "azure"  # Necessary for using the OpenAI library with Azure OpenAI
-openai.api_version = os.getenv("OPENAI_API_VERSION")  # Latest / target version of the API
+@st.cache_resource
+def get_llm() -> ChatOpenAI:
+    # Configure OpenAI API using Azure OpenAI
+    openai.api_key = os.getenv("API_KEY")
+    openai.api_base = os.getenv("ENDPOINT")
+    openai.api_type = "azure"  # Necessary for using the OpenAI library with Azure OpenAI
+    openai.api_version = os.getenv("OPENAI_API_VERSION")  # Latest / target version of the API
 
-# Implementation
-from langchain.embeddings import OpenAIEmbeddings
+    # OpenAI Settings
+    model_deployment = "text-embedding-ada-002"
+    # SDK calls this "engine", but naming it "deployment_name" for clarity
 
-# OpenAI Settings
-model_deployment = "text-embedding-ada-002"
-# SDK calls this "engine", but naming it "deployment_name" for clarity
+    model_name = "text-embedding-ada-002"
 
-model_name = "text-embedding-ada-002"
+    openai_embeddings: OpenAIEmbeddings = OpenAIEmbeddings(
+        openai_api_version = os.getenv("OPENAI_API_VERSION"), openai_api_key = os.getenv("API_KEY"),
+        openai_api_base = os.getenv("ENDPOINT"), openai_api_type = "azure"
+    )
 
-openai_embeddings: OpenAIEmbeddings = OpenAIEmbeddings(
-    openai_api_version = os.getenv("OPENAI_API_VERSION"), openai_api_key = os.getenv("API_KEY"),
-    openai_api_base = os.getenv("ENDPOINT"), openai_api_type = "azure"
-)
+    # LLM - Azure OpenAI
+    llm = ChatOpenAI(temperature = 0.3, openai_api_key = os.getenv("API_KEY"), openai_api_base = os.getenv("ENDPOINT"), model_name="gpt-35-turbo", engine="Voicetask")
+    return llm
 
-# LLM - Azure OpenAI
-llm = ChatOpenAI(temperature = 0.3, openai_api_key = os.getenv("API_KEY"), openai_api_base = os.getenv("ENDPOINT"), model_name="gpt-35-turbo", engine="Voicetask")
+llm = get_llm()
 
 #sidebar configuration
 #import the file check functions
@@ -77,13 +80,21 @@ with st.sidebar:
     else:
         st.session_state.uploaded_files = None
                   
-              
-    
 
 #chat area
+def send_message():
+    prompt = st.session_state.prompt
+    st.session_state.messages.append(('user', prompt))
+
+if 'messages' not in st.session_state:
+    st.session_state.messages = []
+
 message = st.container()
-if prompt:=st.chat_input("Enter your query"):
-    message.chat_message("user").write(prompt)
+st.chat_input("Enter your query", key='prompt', on_submit=send_message)
+
+with message:
+    for role, text in st.session_state.messages:
+        st.chat_message(role).write(text)
 
 
 
