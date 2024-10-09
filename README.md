@@ -34,12 +34,13 @@ Thank you to all our fantastic contributors for their hard work and dedication! 
 
 | S/N | Rank || Contributor | Merged PRs |
 |--| ---- | -- |----------- | ---------- |
-| 1 | 🥇 | <img src='https://avatars.githubusercontent.com/u/71222572?v=4' alt='Avatar' width='30' height='30'> | [Nalito](https://github.com/Nalito) | 2 |
-| 2 | 🥇 | <img src='https://avatars.githubusercontent.com/u/108756842?v=4' alt='Avatar' width='30' height='30'> | [Odeyiany2](https://github.com/Odeyiany2) | 2 |
-| 3 | 🥈 | <img src='https://avatars.githubusercontent.com/u/11654054?v=4' alt='Avatar' width='30' height='30'> | [AlexanderSanin](https://github.com/AlexanderSanin) | 1 |
-| 4 | 🥈 | <img src='https://avatars.githubusercontent.com/u/46717453?v=4' alt='Avatar' width='30' height='30'> | [jatingarg36](https://github.com/jatingarg36) | 1 |
-| 5 | 🥈 | <img src='https://avatars.githubusercontent.com/u/59177747?v=4' alt='Avatar' width='30' height='30'> | [KeneNwogu](https://github.com/KeneNwogu) | 1 |
-| 6 | 🥈 | <img src='https://avatars.githubusercontent.com/u/138301475?v=4' alt='Avatar' width='30' height='30'> | [PetJs](https://github.com/PetJs) | 1 |
+| 1 | 🥇 | <img src='https://avatars.githubusercontent.com/u/108756842?v=4' alt='Avatar' width='30' height='30'> | [Odeyiany2](https://github.com/Odeyiany2) | 3 |
+| 2 | 🥈 | <img src='https://avatars.githubusercontent.com/u/71222572?v=4' alt='Avatar' width='30' height='30'> | [Nalito](https://github.com/Nalito) | 2 |
+| 3 | 🥉 | <img src='https://avatars.githubusercontent.com/u/11654054?v=4' alt='Avatar' width='30' height='30'> | [AlexanderSanin](https://github.com/AlexanderSanin) | 1 |
+| 4 | 🥉 | <img src='https://avatars.githubusercontent.com/u/73294942?v=4' alt='Avatar' width='30' height='30'> | [David3Emmanuel](https://github.com/David3Emmanuel) | 1 |
+| 5 | 🥉 | <img src='https://avatars.githubusercontent.com/u/46717453?v=4' alt='Avatar' width='30' height='30'> | [jatingarg36](https://github.com/jatingarg36) | 1 |
+| 6 | 🥉 | <img src='https://avatars.githubusercontent.com/u/59177747?v=4' alt='Avatar' width='30' height='30'> | [KeneNwogu](https://github.com/KeneNwogu) | 1 |
+| 7 | 🥉 | <img src='https://avatars.githubusercontent.com/u/138301475?v=4' alt='Avatar' width='30' height='30'> | [PetJs](https://github.com/PetJs) | 1 |
 
 Thank you to all our fantastic contributors for their hard work and dedication!
 
