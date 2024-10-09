@@ -14,28 +14,33 @@ import openai
 from dotenv import load_dotenv
 load_dotenv()
 
-# Configure OpenAI API using Azure OpenAI
-openai.api_key = os.getenv("API_KEY")
-openai.api_base = os.getenv("ENDPOINT")
-openai.api_type = "azure"  # Necessary for using the OpenAI library with Azure OpenAI
-openai.api_version = os.getenv("OPENAI_API_VERSION")  # Latest / target version of the API
+@st.cache_resource
+def get_llm() -> ChatOpenAI:
+    # Configure OpenAI API using Azure OpenAI
+    openai.api_key = os.getenv("API_KEY")
+    openai.api_base = os.getenv("ENDPOINT")
+    openai.api_type = "azure"  # Necessary for using the OpenAI library with Azure OpenAI
+    openai.api_version = os.getenv("OPENAI_API_VERSION")  # Latest / target version of the API
 
-# Implementation
-from langchain.embeddings import OpenAIEmbeddings
+    # Implementation
+    from langchain.embeddings import OpenAIEmbeddings
 
-# OpenAI Settings
-model_deployment = "text-embedding-ada-002"
-# SDK calls this "engine", but naming it "deployment_name" for clarity
+    # OpenAI Settings
+    model_deployment = "text-embedding-ada-002"
+    # SDK calls this "engine", but naming it "deployment_name" for clarity
 
-model_name = "text-embedding-ada-002"
+    model_name = "text-embedding-ada-002"
 
-openai_embeddings: OpenAIEmbeddings = OpenAIEmbeddings(
-    openai_api_version = os.getenv("OPENAI_API_VERSION"), openai_api_key = os.getenv("API_KEY"),
-    openai_api_base = os.getenv("ENDPOINT"), openai_api_type = "azure"
-)
+    openai_embeddings: OpenAIEmbeddings = OpenAIEmbeddings(
+        openai_api_version = os.getenv("OPENAI_API_VERSION"), openai_api_key = os.getenv("API_KEY"),
+        openai_api_base = os.getenv("ENDPOINT"), openai_api_type = "azure"
+    )
 
-# LLM - Azure OpenAI
-llm = ChatOpenAI(temperature = 0.3, openai_api_key = os.getenv("API_KEY"), openai_api_base = os.getenv("ENDPOINT"), model_name="gpt-35-turbo", engine="Voicetask")
+    # LLM - Azure OpenAI
+    llm = ChatOpenAI(temperature = 0.3, openai_api_key = os.getenv("API_KEY"), openai_api_base = os.getenv("ENDPOINT"), model_name="gpt-35-turbo", engine="Voicetask")
+    return llm
+
+llm = get_llm()
 
 #sidebar configuration
 #import the file check functions
