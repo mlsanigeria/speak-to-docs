@@ -68,8 +68,8 @@ def extract_contents_from_doc(files, temp_dir):
     Returns a directory containing a file stored with the document's extracted content
     """
     # Constants for Azure Document Intelligence 
-    DI_ENDPOINT = os.getenv("DOCUMENT_INTELLIGENCE_ENDPOINT") #gotten from the azure document intelligence resource created
-    DOCUMENT_INTELLIGENCE_KEY = os.getenv('DOCUMENT_INTELLIGENCE_SUBSCRIPTION_KEY') #gotten from the resource created in microsoft azure
+    DI_ENDPOINT = os.getenv("DOCUMENT_INTELLIGENCE_ENDPOINT") #document intelligence endpoint in the .env file
+    DOCUMENT_INTELLIGENCE_KEY = os.getenv('DOCUMENT_INTELLIGENCE_SUBSCRIPTION_KEY') #document intelligence subscription key
 
     document_intelligence_client = DocumentAnalysisClient(
         endpoint=DI_ENDPOINT,
