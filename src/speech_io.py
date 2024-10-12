@@ -37,15 +37,19 @@ def transcribe_audio(audio_file_path):
 
     # Prepare the request data properly as JSON
     data = {
-        'locales': ['en-US'],
-        'profanityFilterMode': 'Masked'
+        'definition': '''
+        {
+            "locales": ["en-US"],
+            "profanityFilterMode": "Masked"
+        }
+        '''
     }
 
     try:
         with open(audio_file_path, 'rb') as audio_file:
             files = {'audio': audio_file}
             # Make the POST request to the API
-            response = requests.post(STT_URL, headers=headers, files=files, json=data)
+            response = requests.post(STT_URL, headers=headers, files=files, data=data)
             response.raise_for_status()  # Raise an exception for bad status codes
             
             result = response.json()
