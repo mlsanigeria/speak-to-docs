@@ -54,7 +54,8 @@ def transcribe_audio(audio_file_path):
             response.raise_for_status()  # Raise an exception for bad status codes
             
             result = response.json()
-            transcription = result['combinedPhrases'][0]['text']
+            # extract transcription from first speaker and check status of transcription in case combinedPhrases is found in response
+            transcription = result.get('combinedPhrases', [{}])[0].get('text', '')
             
             audio_file.close()
             return transcription
@@ -63,7 +64,7 @@ def transcribe_audio(audio_file_path):
         error_message = f"Transcription failed: {str(e)}\nResponse: {response.text if 'response' in locals() else 'No response'}"
         raise Exception(error_message)
 
-def synthesize_speech(text, output_file="output.wav", voice_name='en-NG-EzinneNeural'):
+def synthesize_speech(text, output_file="output.wav", voice_name='en-NG-EzinneNeural', verbose=False):
     """
     Synthesize speech from text using Azure Speech Service.
     
@@ -73,7 +74,7 @@ def synthesize_speech(text, output_file="output.wav", voice_name='en-NG-EzinneNe
         voice_name (str): Name of the voice to use for synthesis
     
     Returns:
-        bool: True if synthesis was successful, False otherwise
+        tuple: (bool, str) - True if synthesis was successful, False otherwise and a message
     """
     try:
         # Configure speech service
@@ -89,22 +90,29 @@ def synthesize_speech(text, output_file="output.wav", voice_name='en-NG-EzinneNe
         
         # Handle the result
         if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
-            print(f"Speech synthesized successfully for text: {text}")
-            return True
+            if verbose:
+                print(f"Speech synthesized successfully for text: {text}")
+            return True, "Speech synthesis completed successfully."
         
         elif result.reason == speechsdk.ResultReason.Canceled:
             cancellation_details = result.cancellation_details
-            print(f"Speech synthesis canceled: {cancellation_details.reason}")
+            error_message = f"Speech synthesis canceled: {cancellation_details.reason}"
+            if verbose:
+                print(error_message)
             
             if cancellation_details.reason == speechsdk.CancellationReason.Error:
                 if cancellation_details.error_details:
-                    print(f"Error details: {cancellation_details.error_details}")
-                    print("Did you set the speech resource key and region values?")
-            return False
+                    error_message += f" Error details: {cancellation_details.error_details}."
+                    if verbose:
+                        print("Did you set the speech resource key and region values?")
+            
+            return False, error_message
     
     except Exception as e:
-        print(f"An error occurred during speech synthesis: {str(e)}")
-        return False
+        error_message = f"An error occurred during speech synthesis: {str(e)}"
+        if verbose:
+            print(error_message)
+        return False, error_message
 
 def main():
     # Example usage
@@ -113,9 +121,10 @@ def main():
         transcription = transcribe_audio("audio.wav")
         print(f"Transcription: {transcription}")
         
-        # Synthesize speech
+        # Synthesize speech with verbose output to discover reason for error
         sample_text = "I love the AI Hacktoberfest challenge by MLSA Nigeria!"
-        synthesize_speech(sample_text)
+        success, message = synthesize_speech(sample_text, verbose=True)
+        print(message)
         
     except Exception as e:
         print(f"An error occurred: {str(e)}")
