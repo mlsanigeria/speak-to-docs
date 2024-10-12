@@ -21,43 +21,37 @@ def transcribe_audio(audio_file_path):
         audio_file_path (str): Path to the audio file to transcribe
     
     Returns:
-        dict: Transcription result
+        str: Transcription result text
     
     Raises:
         Exception: If the API request fails
     """
+    if not SPEECH_KEY or not SPEECH_REGION:
+        raise Exception("Azure Speech Service credentials are missing.")
+
     # Set up headers with subscription key
     headers = {
         'Ocp-Apim-Subscription-Key': SPEECH_KEY,
         'Accept': 'application/json'
     }
 
-    # Prepare the request data
-    
-        
+    # Prepare the request data properly as JSON
     data = {
-        'definition': '''
-        {
-            "locales": ["en-US"],
-            "profanityFilterMode": "Masked"
-        }
-        '''
+        'locales': ['en-US'],
+        'profanityFilterMode': 'Masked'
     }
-    # Note: Uncomment below line to specify audio channels if needed
-    # "channels": [0, 1]
 
     try:
         with open(audio_file_path, 'rb') as audio_file:
             files = {'audio': audio_file}
             # Make the POST request to the API
-            response = requests.post(STT_URL, headers=headers, files=files, data=data)
+            response = requests.post(STT_URL, headers=headers, files=files, json=data)
             response.raise_for_status()  # Raise an exception for bad status codes
             
             result = response.json()
-            # extract transcription from first speaker and check status of transcription in case combinedPhrases is found in response
-            transcription = result.get('combinedPhrases', [{}])[0].get('text', '')
+            # Extract transcription from the first speaker and handle errors
+            transcription = result.get('combinedPhrases', [{}])[0].get('text', 'No transcription found.')
             
-            audio_file.close()
             return transcription
 
     except requests.exceptions.RequestException as e:
@@ -76,6 +70,9 @@ def synthesize_speech(text, output_file="output.wav", voice_name='en-NG-EzinneNe
     Returns:
         tuple: (bool, str) - True if synthesis was successful, False otherwise and a message
     """
+    if not SPEECH_KEY or not SPEECH_REGION:
+        return False, "Azure Speech Service credentials are missing."
+
     try:
         # Configure speech service
         speech_config = speechsdk.SpeechConfig(subscription=SPEECH_KEY, region=SPEECH_REGION)
@@ -100,11 +97,10 @@ def synthesize_speech(text, output_file="output.wav", voice_name='en-NG-EzinneNe
             if verbose:
                 print(error_message)
             
-            if cancellation_details.reason == speechsdk.CancellationReason.Error:
-                if cancellation_details.error_details:
-                    error_message += f" Error details: {cancellation_details.error_details}."
-                    if verbose:
-                        print("Did you set the speech resource key and region values?")
+            if cancellation_details.reason == speechsdk.CancellationReason.Error and cancellation_details.error_details:
+                error_message += f" Error details: {cancellation_details.error_details}."
+                if verbose:
+                    print("Did you set the speech resource key and region values?")
             
             return False, error_message
     
@@ -121,7 +117,7 @@ def main():
         transcription = transcribe_audio("audio.wav")
         print(f"Transcription: {transcription}")
         
-        # Synthesize speech with verbose output to discover reason for error
+        # Synthesize speech with verbose output
         sample_text = "I love the AI Hacktoberfest challenge by MLSA Nigeria!"
         success, message = synthesize_speech(sample_text, verbose=True)
         print(message)
