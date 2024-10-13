@@ -87,7 +87,7 @@ with st.sidebar:
             if valid_file and valid_files:
                 try:
                     extraction_results = extract_contents_from_doc(valid_files, "temp_dir")
-                    st.success(f"{len(st.session_state.uploaded_files)} file(s) uploaded and processed successfully.")
+                    st.success(f"{len(valid_files)} file(s) uploaded and processed successfully.")
                     logging.info("File(s) uploaded and processed successfully.")
                 except Exception as e:
                     st.error("An error occurred while processing your document. Please try again.")
