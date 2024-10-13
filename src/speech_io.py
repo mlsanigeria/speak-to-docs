@@ -1,129 +1,204 @@
+from io import BytesIO
+from PyPDF2 import PdfReader
+from pptx import Presentation
+import logging
 import os
-import requests
-import azure.cognitiveservices.speech as speechsdk
 from dotenv import load_dotenv
+from werkzeug.utils import secure_filename
+from azure.ai.formrecognizer import DocumentAnalysisClient
+from azure.core.credentials import AzureKeyCredential
+import json
+
+# Setting up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Constants for Azure Speech Services
-SPEECH_REGION = os.getenv("SPEECH_REGION")
-SPEECH_KEY = os.getenv("SPEECH_KEY")
+# Allowed file types
+allowed_files_list = ["pdf", "txt", "pptx"]
 
-# API endpoint for speech-to-text
-STT_URL = f"https://eastus.api.cognitive.microsoft.com/speechtotext/transcriptions:transcribe?api-version=2024-05-15-preview"
+# Conversation history cache (in-memory)
+conversation_history = {}
 
-def transcribe_audio(audio_file_path):
-    """
-    Transcribe audio using Azure Speech Service.
-    
-    Args:
-        audio_file_path (str): Path to the audio file to transcribe
-    
-    Returns:
-        str: Transcription result text
-    
-    Raises:
-        Exception: If the API request fails
-    """
-    if not SPEECH_KEY or not SPEECH_REGION:
-        raise Exception("Azure Speech Service credentials are missing.")
+def allowed_files(filename):
+    '''
+    Returns True if the file type is in the allowed file list
+    '''
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed_files_list
 
-    # Set up headers with subscription key
-    headers = {
-        'Ocp-Apim-Subscription-Key': SPEECH_KEY,
-        'Accept': 'application/json'
-    }
-
-    # Prepare the request data properly as JSON
-    data = {
-        'locales': ['en-US'],
-        'profanityFilterMode': 'Masked'
-    }
-
+def file_check_num(uploaded_file):
+    '''
+    Returns the number of pages (for PDFs), slides (for PPTX), or lines (for TXT) in the file
+    '''
+    file_ext = uploaded_file.name.rsplit(".", 1)[1].lower()  # Extract the file extension
     try:
-        with open(audio_file_path, 'rb') as audio_file:
-            files = {'audio': audio_file}
-            # Make the POST request to the API
-            response = requests.post(STT_URL, headers=headers, files=files, json=data)
-            response.raise_for_status()  # Raise an exception for bad status codes
-            
-            result = response.json()
-            # Extract transcription from the first speaker and handle errors
-            transcription = result.get('combinedPhrases', [{}])[0].get('text', 'No transcription found.')
-            
-            return transcription
-
-    except requests.exceptions.RequestException as e:
-        error_message = f"Transcription failed: {str(e)}\nResponse: {response.text if 'response' in locals() else 'No response'}"
-        raise Exception(error_message)
-
-def synthesize_speech(text, output_file="output.wav", voice_name='en-NG-EzinneNeural', verbose=False):
-    """
-    Synthesize speech from text using Azure Speech Service.
-    
-    Args:
-        text (str): Text to synthesize
-        output_file (str): Path for the output audio file
-        voice_name (str): Name of the voice to use for synthesis
-    
-    Returns:
-        tuple: (bool, str) - True if synthesis was successful, False otherwise and a message
-    """
-    if not SPEECH_KEY or not SPEECH_REGION:
-        return False, "Azure Speech Service credentials are missing."
-
-    try:
-        # Configure speech service
-        speech_config = speechsdk.SpeechConfig(subscription=SPEECH_KEY, region=SPEECH_REGION)
-        audio_config = speechsdk.audio.AudioOutputConfig(filename=output_file)
+        if file_ext == "pdf":
+            pdf_bytes = BytesIO(uploaded_file.read())
+            pdf_reader = PdfReader(pdf_bytes)
+            uploaded_file.seek(0)  # Reset file pointer after reading
+            return len(pdf_reader.pages)
         
-        # Set the voice for synthesis
-        speech_config.speech_synthesis_voice_name = voice_name
+        elif file_ext == "pptx":
+            pptx_bytes = BytesIO(uploaded_file.read())
+            pptx = Presentation(pptx_bytes)
+            uploaded_file.seek(0)
+            return len(pptx.slides)
         
-        # Create synthesizer and generate speech
-        speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
-        result = speech_synthesizer.speak_text_async(text).get()
-        
-        # Handle the result
-        if result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
-            if verbose:
-                print(f"Speech synthesized successfully for text: {text}")
-            return True, "Speech synthesis completed successfully."
-        
-        elif result.reason == speechsdk.ResultReason.Canceled:
-            cancellation_details = result.cancellation_details
-            error_message = f"Speech synthesis canceled: {cancellation_details.reason}"
-            if verbose:
-                print(error_message)
-            
-            if cancellation_details.reason == speechsdk.CancellationReason.Error and cancellation_details.error_details:
-                error_message += f" Error details: {cancellation_details.error_details}."
-                if verbose:
-                    print("Did you set the speech resource key and region values?")
-            
-            return False, error_message
-    
+        elif file_ext == "txt":
+            num = len(uploaded_file.read().decode("utf-8").splitlines())
+            uploaded_file.seek(0)
+            return num
+        else:
+            logger.error(f"Unsupported file extension: {file_ext}")
+            return -1
     except Exception as e:
-        error_message = f"An error occurred during speech synthesis: {str(e)}"
-        if verbose:
-            print(error_message)
-        return False, error_message
+        logger.error(f"Error checking file '{uploaded_file.name}': {e}")
+        return -1
 
-def main():
-    # Example usage
-    try:
-        # Transcribe audio
-        transcription = transcribe_audio("audio.wav")
-        print(f"Transcription: {transcription}")
-        
-        # Synthesize speech with verbose output
-        sample_text = "I love the AI Hacktoberfest challenge by MLSA Nigeria!"
-        success, message = synthesize_speech(sample_text, verbose=True)
-        print(message)
-        
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
+def extract_contents_from_doc(files, temp_dir):
+    """
+    Azure Document Intelligence
+    Args: 
+        files (uploaded by the user): List of uploaded files to process.
+        temp_dir (str): Directory path to store the extracted contents.
+    
+    Returns: 
+        List of file paths where the extracted content is stored.
+    """
+    # Constants for Azure Document Intelligence
+    DI_ENDPOINT = os.getenv("DOCUMENT_INTELLIGENCE_ENDPOINT")
+    DOCUMENT_INTELLIGENCE_KEY = os.getenv('DOCUMENT_INTELLIGENCE_SUBSCRIPTION_KEY')
 
-if __name__ == "__main__":
-    main()
+    if not DI_ENDPOINT or not DOCUMENT_INTELLIGENCE_KEY:
+        logger.error("Azure Document Intelligence credentials are missing.")
+        return []
+
+    document_intelligence_client = DocumentAnalysisClient(
+        endpoint=DI_ENDPOINT,
+        credential=AzureKeyCredential(DOCUMENT_INTELLIGENCE_KEY)
+    )
+
+    # Ensure the temporary directory exists
+    os.makedirs(temp_dir, exist_ok=True)
+    logger.info(f"Temporary directory '{temp_dir}' is ready.")
+
+    extracted_file_paths = []
+
+    for file in files:
+        try:
+            # Read file content
+            file_content = file.read()
+            logger.info(f"Processing file: {file.name}")
+                
+            # Perform content extraction using Azure's "prebuilt-read" model
+            extract = document_intelligence_client.begin_analyze_document("prebuilt-read", file_content)
+            result = extract.result()
+            logger.info(f"OCR completed for file: {file.name}")
+
+            # Extract content from each page
+            extracted_content = ""
+            for page in result.pages:
+                for line in page.lines:
+                    extracted_content += line.content + "\n"
+            
+            # Secure the filename and define a path for saving extracted content
+            filename = secure_filename(file.name)
+            base, ext = os.path.splitext(filename)
+            extracted_filename = f"{base}_extracted.txt"  # Save as .txt for easier reading
+            file_path = os.path.join(temp_dir, extracted_filename)
+
+            # Save the extracted content to a file
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(extracted_content)
+            
+            logger.info(f"Extracted content saved to: {file_path}")
+            extracted_file_paths.append(file_path)
+
+        except Exception as e:
+            logger.error(f"Error processing file '{file.name}': {e}")
+            continue  # Proceed with the next file in case of an error
+
+    return extracted_file_paths
+
+def update_conversation_history(user_id, message):
+    """
+    Update the conversation history for a user.
+
+    Args:
+        user_id (str): The unique identifier of the user.
+        message (str): The latest message or query from the user.
+
+    This function stores the conversation history for each user in memory.
+    For scalability, it can be extended to use a database.
+    """
+    if user_id not in conversation_history:
+        conversation_history[user_id] = []
+
+    # Limit history to the last 10 messages to avoid performance issues
+    if len(conversation_history[user_id]) >= 10:
+        conversation_history[user_id].pop(0)  # Remove the oldest message
+
+    # Add the new message to the user's history
+    conversation_history[user_id].append(message)
+    logger.info(f"Updated conversation history for user {user_id}: {conversation_history[user_id]}")
+
+def get_conversation_context(user_id):
+    """
+    Retrieve the conversation history for a user.
+
+    Args:
+        user_id (str): The unique identifier of the user.
+
+    Returns:
+        str: The concatenated history of the user's conversation.
+    """
+    return " ".join(conversation_history.get(user_id, []))
+
+def generate_answer(user_id, query):
+    """
+    Generate an answer using the conversation history-aware RAG system.
+
+    Args:
+        user_id (str): The unique identifier of the user.
+        query (str): The user's latest query.
+
+    Returns:
+        str: The generated answer, considering the conversation context.
+    """
+    # Update the conversation history with the latest query
+    update_conversation_history(user_id, query)
+
+    # Get the full conversation context
+    conversation_context = get_conversation_context(user_id)
+
+    # Incorporate the context into the RAG process (pseudo-code)
+    # This part would typically involve using the context with the model or RAG system.
+    # For example:
+    # answer = rag_model.generate(query=query, context=conversation_context)
+    
+    # For now, we mock this process:
+    answer = f"Based on the context: '{conversation_context}', here is the answer to '{query}'."
+
+    logger.info(f"Generated answer for user {user_id}: {answer}")
+    return answer
+
+# Mock function for processing a user query
+def process_user_query(user_id, query):
+    """
+    Process a user query, using conversation history to enhance the response.
+
+    Args:
+        user_id (str): The unique identifier of the user.
+        query (str): The user's query.
+
+    Returns:
+        str: The RAG-generated answer to the query.
+    """
+    logger.info(f"Processing query for user {user_id}: {query}")
+    
+    # Generate an answer using the conversation-aware RAG system
+    answer = generate_answer(user_id, query)
+    
+    return answer
