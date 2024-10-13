@@ -15,6 +15,7 @@ Celebrate the remarkable contributions of our top contributors.
 | 6 | 🥉 | <img src='https://avatars.githubusercontent.com/u/46717453?v=4' alt='Avatar' width='30' height='30'> | [jatingarg36](https://github.com/jatingarg36) | 1 |
 | 7 | 🥉 | <img src='https://avatars.githubusercontent.com/u/138301475?v=4' alt='Avatar' width='30' height='30'> | [PetJs](https://github.com/PetJs) | 1 |
 | 8 | 🥉 | <img src='https://avatars.githubusercontent.com/u/120161341?v=4' alt='Avatar' width='30' height='30'> | [phyosandarwin](https://github.com/phyosandarwin) | 1 |
+| 9 | 🥉 | <img src='https://avatars.githubusercontent.com/u/150163338?v=4' alt='Avatar' width='30' height='30'> | [SujitSakore](https://github.com/SujitSakore) | 1 |
 
 A heartfelt **thank you** to all our fantastic contributors for their hard work and dedication! Together, we're making a difference in the open-source community.
 

@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
-import json
 
 # Setting up logging
 logging.basicConfig(level=logging.INFO)
@@ -93,8 +92,8 @@ def extract_contents_from_doc(files, temp_dir):
             logger.info(f"Processing file: {file.name}")
                 
             # Perform content extraction using Azure's "prebuilt-read" model
-            extract = document_intelligence_client.begin_analyze_document("prebuilt-read", file_content)
-            result = extract.result()
+            poller = document_intelligence_client.begin_analyze_document("prebuilt-read", file_content)
+            result = poller.result()  # Wait for the result
             logger.info(f"OCR completed for file: {file.name}")
 
             # Extract content from each page
@@ -102,7 +101,7 @@ def extract_contents_from_doc(files, temp_dir):
             for page in result.pages:
                 for line in page.lines:
                     extracted_content += line.content + "\n"
-            
+
             # Secure the filename and define a path for saving extracted content
             filename = secure_filename(file.name)
             base, ext = os.path.splitext(filename)
