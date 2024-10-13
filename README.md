@@ -34,7 +34,7 @@ Thank you to all our fantastic contributors for their hard work and dedication! 
 
 | S/N | Rank || Contributor | Merged PRs |
 |--| ---- | -- |----------- | ---------- |
-| 1 | 🥇 | <img src='https://avatars.githubusercontent.com/u/108756842?v=4' alt='Avatar' width='30' height='30'> | [Odeyiany2](https://github.com/Odeyiany2) | 3 |
+| 1 | 🥇 | <img src='https://avatars.githubusercontent.com/u/108756842?v=4' alt='Avatar' width='30' height='30'> | [Odeyiany2](https://github.com/Odeyiany2) | 4 |
 | 2 | 🥈 | <img src='https://avatars.githubusercontent.com/u/59177747?v=4' alt='Avatar' width='30' height='30'> | [KeneNwogu](https://github.com/KeneNwogu) | 2 |
 | 3 | 🥈 | <img src='https://avatars.githubusercontent.com/u/71222572?v=4' alt='Avatar' width='30' height='30'> | [Nalito](https://github.com/Nalito) | 2 |
 | 4 | 🥉 | <img src='https://avatars.githubusercontent.com/u/11654054?v=4' alt='Avatar' width='30' height='30'> | [AlexanderSanin](https://github.com/AlexanderSanin) | 1 |
