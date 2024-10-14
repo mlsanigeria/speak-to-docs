@@ -55,6 +55,16 @@ def file_check_num(uploaded_file):
         return -1
 
 
+
+def chunk_document(text, chunk_size=1000, chunk_overlap=200):
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        length_function=len,
+    )
+    chunks = text_splitter.split_text(text)
+    return chunks
+
 def extract_contents_from_doc(files, temp_dir):
     """
     Azure Document Intelligence
@@ -124,12 +134,3 @@ def extract_contents_from_doc(files, temp_dir):
 
     return extracted_file_paths
 
-
-def chunk_document(text, chunk_size=1000, chunk_overlap=200):
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
-        length_function=len,
-    )
-    chunks = text_splitter.split_text(text)
-    return chunks
