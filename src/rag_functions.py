@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Setting up logging
 logging.basicConfig(level=logging.INFO)
@@ -100,17 +101,21 @@ def extract_contents_from_doc(files, temp_dir):
                 for line in page.lines:
                     extracted_content += line.content + "\n"
             
+            # Apply chunking strategy
+            chunks = chunk_document(extracted_content)
+            
             # Secure the filename and define a path for saving extracted content
             filename = secure_filename(file.name)
             base, ext = os.path.splitext(filename)
-            extracted_filename = f"{base}_extracted.txt"  # Save as .txt for easier reading
+            extracted_filename = f"{base}_extracted_chunks.txt"  # Save as .txt for easier reading
             file_path = os.path.join(temp_dir, extracted_filename)
 
-            # Save the extracted content to a file
+            # Save the extracted chunks to a file
             with open(file_path, "w", encoding="utf-8") as f:
-                f.write(extracted_content)
+                for i, chunk in enumerate(chunks):
+                    f.write(f"Chunk {i+1}:\n{chunk}\n\n")
             
-            logger.info(f"Extracted content saved to: {file_path}")
+            logger.info(f"Extracted content (chunked) saved to: {file_path}")
             extracted_file_paths.append(file_path)
 
         except Exception as e:
@@ -118,3 +123,13 @@ def extract_contents_from_doc(files, temp_dir):
             continue  # Proceed with the next file in case of an error
 
     return extracted_file_paths
+
+
+def chunk_document(text, chunk_size=1000, chunk_overlap=200):
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        length_function=len,
+    )
+    chunks = text_splitter.split_text(text)
+    return chunks
