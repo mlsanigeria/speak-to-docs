@@ -5,6 +5,8 @@ altair==5.4.1
 annotated-types==0.7.0
 anyio==4.6.0
 attrs==24.2.0
+azure-ai-formrecognizer==3.3.3 
+azure-identity==1.19.0
 azure-cognitiveservices-speech==1.40.0
 blinker==1.8.2
 cachetools==5.5.0
@@ -69,3 +71,4 @@ typing_extensions==4.12.2
 tzdata==2024.2
 urllib3==2.2.3
 yarl==1.12.1
+werkzeug==3.0.4
