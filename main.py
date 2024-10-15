@@ -2,7 +2,7 @@ import streamlit as st
 import os
 import logging
 from dotenv import load_dotenv
-from src.speech_io import transcribe_audio
+from src.speech_io import transcribe_audio, synthesize_speech
 from src.rag_functions import allowed_files, file_check_num, extract_contents_from_doc
 from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
@@ -95,10 +95,23 @@ with st.sidebar:
     else:
         st.session_state.uploaded_files = None
 
+
+def send_response(message, response=None):
+    dummy_response = "Hello. How are you?"
+    st.session_state.messages.append(('assistant', response or dummy_response))
+    # TODO: make async ??
+    print(response or dummy_response)
+    synthesize_speech(text=response or dummy_response)
+    
+
 # Chat area and audio input handling
 def send_message():
     prompt = st.session_state.prompt
     st.session_state.messages.append(('user', prompt))
+    
+    # get response turn it to speech and reply user
+    send_response(prompt)
+
 
 if 'messages' not in st.session_state:
     st.session_state.messages = []
@@ -106,31 +119,38 @@ if 'messages' not in st.session_state:
 message = st.container()
 
 # Handle text input from user
-if prompt := st.chat_input("Enter your query"):
-    message.chat_message("user").write(prompt)
+# if prompt := st.chat_input("Enter your query"):
+#     message.chat_message("user").write(prompt)
 
-# Handle audio input from user
-audio_value = st.experimental_audio_input("Record a voice message")
-if audio_value:
+def handle_audio_message():
+    audio_value = st.session_state.audio_prompt
     try:
         with open("audio.wav", "wb") as f:
             f.write(audio_value.getbuffer())
         
         speech_text = transcribe_audio("audio.wav")
         if speech_text:
-            message.chat_message("user").write(speech_text)
+            st.session_state.messages.append(("user", speech_text))
+            send_response(speech_text, "You have a great voice")
             logging.info("Audio transcribed successfully.")
         else:
-            message.chat_message("user").write("Sorry, I couldn't transcribe your audio. Please try again.")
+            # st.session_state.messages.append(("assistant", ))
+            send_response(speech_text, "Sorry, I couldn't transcribe your audio. Please try again.")
             logging.warning("Audio transcription failed.")
     except Exception as e:
         st.error("An error occurred while processing the audio. Please try again.")
-        logging.error(f"Error processing audio input: {e}")
+        logging.error(f"Error processing audio input: {e}")  
+
 
 # Input area for user queries
 st.chat_input("Enter your query", key='prompt', on_submit=send_message)
 
 # Display chat messages
-with message:
-    for role, text in st.session_state.messages:
-        st.chat_message(role).write(text)
+
+# with message:
+for role, text in st.session_state.messages:
+    st.chat_message(role).write(text)
+    
+
+# Handle audio input from user
+audio_value = st.experimental_audio_input("Record a voice message", key="audio_prompt", on_change=handle_audio_message)
