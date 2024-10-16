@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Setting up logging
 logging.basicConfig(level=logging.INFO)
@@ -53,6 +54,16 @@ def file_check_num(uploaded_file):
         logger.error(f"Error checking file '{uploaded_file.name}': {e}")
         return -1
 
+
+
+def chunk_document(text, chunk_size=1000, chunk_overlap=200):
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        length_function=len,
+    )
+    chunks = text_splitter.split_text(text)
+    return chunks
 
 def extract_contents_from_doc(files, temp_dir):
     """
