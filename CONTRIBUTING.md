@@ -73,7 +73,7 @@ The **Speech-Enabled RAG Solution** is a voice-powered interface that allows use
 The project is structured as follows:
 - **speech_to_docs**: This is the main directory for the project.
 - **speech_to_docs/src**: This directory contains all the files that will house all the functionalities of the project: Speech transcription and synthesis, RAG model Solution and document reading.
-- **speech_to_docs/src/rag_functions.py**: This file contains the function that checks for uploaded file compatibility, making sure it doesn't exceed 50 pages limit as well as the RAG model solution functionalities.
+- **speech_to_docs/src/rag_functions.py**: This file contains functions for checking the uploaded file compatibility, making sure files do not exceed a 50-page limit. It also includes functionalities for processing various document types (PDF, PPTX, TXT) to extract content using Azure Document Intelligence. It also provides detailed logging for error handling and tracks the extraction process, saving the output in a user-friendly text format.
 - **speech_to_docs/src/speech_io.py**: This files handles the speech_to_text/ text_to_speech function of the model by using **Azure Cognitive Services: Speech Transcription** (Speech-to-Text) and **Speech Synthesis** (Text-to-Speech).
 - **speech_to_docs/.env.example**: This files handles the environment variables that are used in your codebase. It outlines the essential environment variables needed for the proper functioning of the Speech-to-Docs application.
 - **speech_to_docs/.gitignore**: This contains all the folder and files you do not want to push to github (e.g. .env, /bin/ e.t.c)
