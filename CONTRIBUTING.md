@@ -78,7 +78,8 @@ The project is structured as follows:
 - **speech_to_docs/src/speech_io.py**: This files handles the speech_to_text/ text_to_speech function of the model by using **Azure Cognitive Services: Speech Transcription** (Speech-to-Text) and **Speech Synthesis** (Text-to-Speech).
 - **speech_to_docs/.gitignore**: This contains all the folder and files that are not to be pushed to GitHub (e.g. .env, bin/ e.t.c)
 
-- **speech_to_docs/.gitignore**: This contains all the folder and files you do not want to push to github (e.g. .env, /bin/ e.t.c)
+- **speech_to_docs/.gitignore**: This contains all the folder and files that are not to be pushed to GitHub (e.g. .env, bin/ e.t.c)
+
 - **speech_to_docs/requirements.txt**: This file lists the dependencies required to run the project.
 - **speech_to_docs/README.md**: This file contains information about the project, including this guide
 - **speech_to_docs/LICENSE**: This file contains the license information for the project.
