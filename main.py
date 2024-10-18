@@ -8,6 +8,8 @@ from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 import openai
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.vectorstores import FAISS
 
 # Set up page configuration
 st.set_page_config(page_title="Speak-To-Docs", page_icon="📝", layout="wide", initial_sidebar_state="expanded")
@@ -55,53 +57,51 @@ if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = None
 
 with st.sidebar:
-    st.subheader("Upload your document")
+    st.subheader("Upload your documents")
     st.session_state.uploaded_files = st.sidebar.file_uploader(
-        "Choose files", accept_multiple_files=True, type=["pdf", "txt", "pptx"], key="initial"
+        "Choose up to 2 files", accept_multiple_files=True, type=["pdf", "txt", "pptx"], key="initial"
     )
     
     if st.session_state.uploaded_files:
         if len(st.session_state.uploaded_files) > 2:
             st.error("You can only upload a maximum of 2 documents.")
-            logging.warning("User attempted to upload more than 2 documents.")
             st.session_state.uploaded_files = None
         else:
             valid_files = []
-            valid_file = True
             for file in st.session_state.uploaded_files:
                 if allowed_files(file.name):
                     num_pages = file_check_num(file)
                     if num_pages > 50:
                         st.error(f"{file.name} exceeds the 50-page limit (has {num_pages} pages).")
-                        logging.warning(f"File {file.name} exceeds the page limit.")
-                        valid_file = False
-                        break
                     else:
                         valid_files.append(file)
                 else:
                     st.error(f"{file.name} is not a valid file type.")
-                    logging.warning(f"Invalid file type: {file.name}")
-                    valid_file = False
-                    break
-
-            if valid_file and valid_files:
+            
+            if valid_files:
+                st.success(f"{len(valid_files)} file(s) uploaded successfully.")
+                # Process the valid files
                 try:
-                    extraction_results = extract_contents_from_doc(valid_files, "temp_dir")
-                    st.success(f"{len(st.session_state.uploaded_files)} file(s) uploaded and processed successfully.")
-                    logging.info("File(s) uploaded and processed successfully.")
+                    extracted_contents = extract_contents_from_doc(valid_files, "temp_dir")
+                    st.session_state.extracted_contents = extracted_contents
+                    st.success("Files processed successfully.")
                 except Exception as e:
-                    st.error("An error occurred while processing your document. Please try again.")
-                    logging.error(f"Error extracting content from document: {e}")
+                    st.error(f"An error occurred while processing your documents: {str(e)}")
+            else:
+                st.session_state.uploaded_files = None
     else:
         st.session_state.uploaded_files = None
 
 
 def send_response(message, response=None):
-    dummy_response = "Hello. How are you?"
-    st.session_state.messages.append(('assistant', response or dummy_response))
-    # TODO: make async ??
-    print(response or dummy_response)
-    synthesize_speech(text=response or dummy_response)
+    if 'rag_chain' in st.session_state:
+        rag_response = st.session_state.rag_chain.run(message)
+        st.session_state.messages.append(('assistant', rag_response))
+        synthesize_speech(text=rag_response)
+    else:
+        dummy_response = "Please upload documents to use the RAG system."
+        st.session_state.messages.append(('assistant', dummy_response))
+        synthesize_speech(text=dummy_response)
     
 
 # Chat area and audio input handling
@@ -154,3 +154,25 @@ for role, text in st.session_state.messages:
 
 # Handle audio input from user
 audio_value = st.experimental_audio_input("Record a voice message", key="audio_prompt", on_change=handle_audio_message)
+
+def create_vectorstore(extracted_contents):
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    texts = []
+    for content in extracted_contents:
+        with open(content, 'r') as f:
+            text = f.read()
+            texts.extend(text_splitter.split_text(text))
+    
+    embeddings = OpenAIEmbeddings()
+    vectorstore = FAISS.from_texts(texts, embeddings)
+    return vectorstore
+
+def setup_rag(vectorstore, llm):
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+    rag_chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
+    return rag_chain
+
+# Add this after processing the valid files
+if 'extracted_contents' in st.session_state:
+    vectorstore = create_vectorstore(st.session_state.extracted_contents)
+    st.session_state.rag_chain = setup_rag(vectorstore, llm)
