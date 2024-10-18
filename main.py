@@ -8,6 +8,7 @@ from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 import openai
+import time
 
 # Set up page configuration
 st.set_page_config(page_title="Speak-To-Docs", page_icon="📝", layout="wide", initial_sidebar_state="expanded")
@@ -17,6 +18,30 @@ logging.basicConfig(filename='app.log', level=logging.INFO, format='%(asctime)s:
 
 # Load environment variables
 load_dotenv()
+
+# Session timeout in seconds (e.g., 30 minutes)
+SESSION_TIMEOUT = 1800
+
+# Initialize session state variables
+if 'last_activity' not in st.session_state:
+    st.session_state.last_activity = time.time()
+if 'conversation_history' not in st.session_state:
+    st.session_state.conversation_history = []
+if 'uploaded_files' not in st.session_state:
+    st.session_state.uploaded_files = None
+if 'file_contents' not in st.session_state:
+    st.session_state.file_contents = {}
+
+def check_session_timeout():
+    """Check if the session has timed out and reset if necessary."""
+    current_time = time.time()
+    if current_time - st.session_state.last_activity > SESSION_TIMEOUT:
+        # Reset session state
+        st.session_state.conversation_history = []
+        st.session_state.uploaded_files = None
+        st.session_state.file_contents = {}
+        st.warning("Your session has timed out. Please upload your files again.")
+    st.session_state.last_activity = current_time
 
 # Initialize the LLM (Language Learning Model)
 @st.cache_resource
@@ -51,106 +76,63 @@ def get_llm() -> ChatOpenAI:
 llm = get_llm()
 
 # Sidebar configuration for file uploads
-if 'uploaded_files' not in st.session_state:
-    st.session_state.uploaded_files = None
-
 with st.sidebar:
     st.subheader("Upload your document")
-    st.session_state.uploaded_files = st.sidebar.file_uploader(
-        "Choose files", accept_multiple_files=True, type=["pdf", "txt", "pptx"], key="initial"
+    uploaded_files = st.sidebar.file_uploader(
+        "Choose files", accept_multiple_files=True, type=["pdf", "txt", "pptx"], key="file_uploader"
     )
     
-    if st.session_state.uploaded_files:
-        if len(st.session_state.uploaded_files) > 2:
+    if uploaded_files:
+        check_session_timeout()
+        if len(uploaded_files) > 2:
             st.error("You can only upload a maximum of 2 documents.")
             logging.warning("User attempted to upload more than 2 documents.")
-            st.session_state.uploaded_files = None
         else:
             valid_files = []
-            valid_file = True
-            for file in st.session_state.uploaded_files:
+            for file in uploaded_files:
                 if allowed_files(file.name):
                     num_pages = file_check_num(file)
                     if num_pages > 50:
                         st.error(f"{file.name} exceeds the 50-page limit (has {num_pages} pages).")
                         logging.warning(f"File {file.name} exceeds the page limit.")
-                        valid_file = False
-                        break
                     else:
                         valid_files.append(file)
                 else:
                     st.error(f"{file.name} is not a valid file type.")
                     logging.warning(f"Invalid file type: {file.name}")
-                    valid_file = False
-                    break
 
-            if valid_file and valid_files:
+            if valid_files:
                 try:
                     extraction_results = extract_contents_from_doc(valid_files, "temp_dir")
-                    st.success(f"{len(st.session_state.uploaded_files)} file(s) uploaded and processed successfully.")
+                    st.session_state.uploaded_files = valid_files
+                    st.session_state.file_contents = extraction_results
+                    st.success(f"{len(valid_files)} file(s) uploaded and processed successfully.")
                     logging.info("File(s) uploaded and processed successfully.")
                 except Exception as e:
                     st.error("An error occurred while processing your document. Please try again.")
                     logging.error(f"Error extracting content from document: {e}")
-    else:
-        st.session_state.uploaded_files = None
-
 
 def send_response(message, response=None):
+    check_session_timeout()
     dummy_response = "Hello. How are you?"
-    st.session_state.messages.append(('assistant', response or dummy_response))
-    # TODO: make async ??
-    print(response or dummy_response)
-    synthesize_speech(text=response or dummy_response)
-    
+    response_text = response or dummy_response
+    st.session_state.conversation_history.append(('assistant', response_text))
+    print(response_text)
+    synthesize_speech(text=response_text)
 
 # Chat area and audio input handling
 def send_message():
+    check_session_timeout()
     prompt = st.session_state.prompt
-    st.session_state.messages.append(('user', prompt))
+    st.session_state.conversation_history.append(('user', prompt))
     
     # get response turn it to speech and reply user
     send_response(prompt)
 
+# Display conversation history
+for speaker, message in st.session_state.conversation_history:
+    with st.chat_message(speaker):
+        st.write(message)
 
-if 'messages' not in st.session_state:
-    st.session_state.messages = []
-
-message = st.container()
-
-# Handle text input from user
-# if prompt := st.chat_input("Enter your query"):
-#     message.chat_message("user").write(prompt)
-
-def handle_audio_message():
-    audio_value = st.session_state.audio_prompt
-    try:
-        with open("audio.wav", "wb") as f:
-            f.write(audio_value.getbuffer())
-        
-        speech_text = transcribe_audio("audio.wav")
-        if speech_text:
-            st.session_state.messages.append(("user", speech_text))
-            send_response(speech_text, "You have a great voice")
-            logging.info("Audio transcribed successfully.")
-        else:
-            # st.session_state.messages.append(("assistant", ))
-            send_response(speech_text, "Sorry, I couldn't transcribe your audio. Please try again.")
-            logging.warning("Audio transcription failed.")
-    except Exception as e:
-        st.error("An error occurred while processing the audio. Please try again.")
-        logging.error(f"Error processing audio input: {e}")  
-
-
-# Input area for user queries
-st.chat_input("Enter your query", key='prompt', on_submit=send_message)
-
-# Display chat messages
-
-# with message:
-for role, text in st.session_state.messages:
-    st.chat_message(role).write(text)
-    
-
-# Handle audio input from user
-audio_value = st.experimental_audio_input("Record a voice message", key="audio_prompt", on_change=handle_audio_message)
+# Handle audio input
+st.audio_input("Speak your message", key="audio_prompt", on_change=handle_audio_message)
