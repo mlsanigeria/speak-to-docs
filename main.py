@@ -3,10 +3,14 @@ import os
 import logging
 from dotenv import load_dotenv
 from src.speech_io import transcribe_audio, synthesize_speech
-from src.rag_functions import allowed_files, file_check_num, extract_contents_from_doc
-from langchain.chains import RetrievalQA
+from src.rag_functions import (allowed_files, file_check_num, 
+                               extract_contents_from_doc, create_vector_store, logger)
+from langchain.chains.retrieval import create_retrieval_chain
+from langchain.chains.history_aware_retriever import create_history_aware_retriever
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.prompts import PromptTemplate
 import openai
 
 # Set up page configuration
@@ -28,13 +32,13 @@ def get_llm() -> ChatOpenAI:
         openai.api_type = "azure"
         openai.api_version = os.getenv("OPENAI_API_VERSION")
         
-        # OpenAI Settings
-        openai_embeddings = OpenAIEmbeddings(
-            openai_api_version=os.getenv("OPENAI_API_VERSION"), 
-            openai_api_key=os.getenv("API_KEY"),
-            openai_api_base=os.getenv("ENDPOINT"), 
-            openai_api_type="azure"
-        )
+        # # OpenAI Settings
+        # openai_embeddings = OpenAIEmbeddings(
+        #     openai_api_version=os.getenv("OPENAI_API_VERSION"), 
+        #     openai_api_key=os.getenv("API_KEY"),
+        #     openai_api_base=os.getenv("ENDPOINT"), 
+        #     openai_api_type="azure"
+        # )
         
         llm = ChatOpenAI(
             temperature=0.3, openai_api_key=os.getenv("API_KEY"), 
@@ -49,6 +53,54 @@ def get_llm() -> ChatOpenAI:
         return None
 
 llm = get_llm()
+
+    
+def query_response(query, vector_store):
+    """
+    Generates a response to the user's query using the vector store and the language model.
+    Uses Langchains retrieval library
+
+    Args:
+        query (str): The user's input query.
+        vector_store (DocArrayInMemorySearch): The initialized vector store
+
+    Returns:
+        str: The generated response.
+    """
+    try:
+        llm = get_llm()
+        #prompting for the llm 
+        prompt_template = """Use the following excerpts to answer a query. If you can't find the answer from the provided document,
+            don't try to make up an answer. Just say "I can't find the answer from the provided document but you may want to check the following links".
+
+    Context: {context}
+
+    Question: {question}
+
+    Helpful Answer:
+    """
+        qa_prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
+        # Create history-aware retriever
+        history_aware_retriever = create_history_aware_retriever(
+            llm,
+            vector_store.as_retriever(search_type="similarity",
+                                    search_kwargs={"k": 3},),
+            qa_prompt,)
+        #initializing  a question answer chain
+        question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
+
+        #query retrieval chain
+        chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
+
+        #retrieve answer
+        response = chain.invoke({"question": query})
+        logger.info("Response successfully generated")
+        return response["answer"]
+
+    except Exception as e:
+        logger.error(f"Error occurred in generating response:{e}")
+        return "Sorry, I couldn't process your request at the moment."
+
 
 # Sidebar configuration for file uploads
 if 'uploaded_files' not in st.session_state:
@@ -87,8 +139,11 @@ with st.sidebar:
             if valid_file and valid_files:
                 try:
                     extraction_results = extract_contents_from_doc(valid_files, "temp_dir")
-                    st.success(f"{len(st.session_state.uploaded_files)} file(s) uploaded and processed successfully.")
-                    logging.info("File(s) uploaded and processed successfully.")
+                    vector_store = create_vector_store(extraction_results)
+                    if vector_store:
+                        st.session_state['vector_store'] = vector_store
+                        st.success(f"{len(st.session_state.uploaded_files)} file(s) uploaded and processed successfully.")
+                        logging.info("File(s) uploaded and processed successfully.")
                 except Exception as e:
                     st.error("An error occurred while processing your document. Please try again.")
                     logging.error(f"Error extracting content from document: {e}")
@@ -97,11 +152,19 @@ with st.sidebar:
 
 
 def send_response(message, response=None):
-    dummy_response = "Hello. How are you?"
-    st.session_state.messages.append(('assistant', response or dummy_response))
+    # dummy_response = "Hello. How are you?"
+    # st.session_state.messages.append(('assistant', response or dummy_response))
     # TODO: make async ??
-    print(response or dummy_response)
-    synthesize_speech(text=response or dummy_response)
+    vector_store = st.session_state['vector_store']
+
+    # Get the response from query_response
+    answer = query_response(message, vector_store)
+
+    # Append the assistant's response to messages
+    st.session_state.messages.append(('assistant', answer))
+
+    print(answer)
+    synthesize_speech(text=answer)
     
 
 # Chat area and audio input handling
@@ -131,8 +194,9 @@ def handle_audio_message():
         speech_text = transcribe_audio("audio.wav")
         if speech_text:
             st.session_state.messages.append(("user", speech_text))
-            send_response(speech_text, "You have a great voice")
-            logging.info("Audio transcribed successfully.")
+            #send_response(speech_text, "You have a great voice")
+            send_response(speech_text)
+            logging.info("Audio transcribed and response generated successfully.")
         else:
             # st.session_state.messages.append(("assistant", ))
             send_response(speech_text, "Sorry, I couldn't transcribe your audio. Please try again.")
