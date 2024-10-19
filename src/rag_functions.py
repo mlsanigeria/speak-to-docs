@@ -8,9 +8,6 @@ from werkzeug.utils import secure_filename
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
-from langchain_community.vectorstores import DocArrayInMemorySearch
-from langchain.schema import Document
 
 
 # Setting up logging
@@ -133,45 +130,3 @@ def extract_contents_from_doc(files, temp_dir):
             continue  # Proceed with the next file in case of an error
 
     return extracted_file_paths
-
-#function to embed the chunks created on docs and initializing a vector store
-def create_vector_store(extracted_file_paths):
-    """
-    Embeds the documents and initializes a DocArrayInMemorySearch vector store.
-
-    Args:
-        extracted_file_path: A path containing the contents extracted from the documents uploaded
-
-    Returns:
-        DocArrayInMemorySearch: An initialized vector store with embedded documents.
-    """
-    try:
-        #OpenAI Embedding settings
-        openai_embeddings = OpenAIEmbeddings(
-                openai_api_version=os.getenv("OPENAI_API_VERSION"), 
-                openai_api_key=os.getenv("API_KEY"),
-                openai_api_base=os.getenv("ENDPOINT"), 
-                openai_api_type="azure",
-                deployment="text-embedding-ada-002"
-            )
-        logger.info("OpenAI Embeddings initialized successfully.")
-        docs = []
-        for file_path in extracted_file_paths:
-            try:
-                with open(file_path, "r", encoding="utf-8") as file:
-                    text = file.read()
-                chunks = chunk_document(text)
-                docs.extend([Document(page_content=chunk) for chunk in chunks])
-                logger.info(f"Document {file_path} chunked into {len(chunks)} chunks.")
-            except Exception as e:
-                logger.error(f"Error reading or chunking file '{file_path}': {e}")
-                continue
-
-        #initializing the vector store
-        vector_store = DocArrayInMemorySearch.from_documents(docs, openai_embeddings)
-        logger.info("DocArrayInMemorySearch vector store initialized successfully.")
-
-        return vector_store
-    
-    except Exception as e:
-        logger.exception(f"An error occurred while initializing the vector store: {e}")

@@ -4,7 +4,10 @@ import logging
 from dotenv import load_dotenv
 from src.speech_io import transcribe_audio, synthesize_speech
 from src.rag_functions import (allowed_files, file_check_num, 
-                               extract_contents_from_doc, create_vector_store, logger)
+                               extract_contents_from_doc, chunk_document, logger)
+from langchain.embeddings import OpenAIEmbeddings
+from langchain_community.vectorstores import DocArrayInMemorySearch
+from langchain.schema import Document
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain.chains.history_aware_retriever import create_history_aware_retriever
 from langchain.chat_models import ChatOpenAI
@@ -54,52 +57,47 @@ def get_llm() -> ChatOpenAI:
 
 llm = get_llm()
 
-    
-def query_response(query, vector_store):
+#function to embed the chunks created on docs and initializing a vector store
+def create_vector_store(extracted_file_paths):
     """
-    Generates a response to the user's query using the vector store and the language model.
-    Uses Langchains retrieval library
+    Embeds the documents and initializes a DocArrayInMemorySearch vector store.
 
     Args:
-        query (str): The user's input query.
-        vector_store (DocArrayInMemorySearch): The initialized vector store
+        extracted_file_path: A path containing the contents extracted from the documents uploaded
 
     Returns:
-        str: The generated response.
+        DocArrayInMemorySearch: An initialized vector store with embedded documents.
     """
     try:
-        llm = get_llm()
-        #prompting for the llm 
-        prompt_template = """Use the following excerpts to answer a query. If you can't find the answer from the provided document,
-            don't try to make up an answer. Just say "I can't find the answer from the provided document but you may want to check the following links".
+        #OpenAI Embedding settings
+        openai_embeddings = OpenAIEmbeddings(
+                openai_api_version=os.getenv("OPENAI_API_VERSION"), 
+                openai_api_key=os.getenv("API_KEY"),
+                openai_api_base=os.getenv("ENDPOINT"), 
+                openai_api_type="azure",
+                deployment="text-embedding-ada-002"
+            )
+        logger.info("OpenAI Embeddings initialized successfully.")
+        docs = []
+        for file_path in extracted_file_paths:
+            try:
+                with open(file_path, "r", encoding="utf-8") as file:
+                    text = file.read()
+                chunks = chunk_document(text)
+                docs.extend([Document(page_content=chunk) for chunk in chunks])
+                logger.info(f"Document {file_path} chunked into {len(chunks)} chunks.")
+            except Exception as e:
+                logger.error(f"Error reading or chunking file '{file_path}': {e}")
+                continue
 
-    Context: {context}
+        #initializing the vector store
+        vector_store = DocArrayInMemorySearch.from_documents(docs, openai_embeddings)
+        logger.info("DocArrayInMemorySearch vector store initialized successfully.")
 
-    Question: {question}
-
-    Helpful Answer:
-    """
-        qa_prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
-        # Create history-aware retriever
-        history_aware_retriever = create_history_aware_retriever(
-            llm,
-            vector_store.as_retriever(search_type="similarity",
-                                    search_kwargs={"k": 3},),
-            qa_prompt,)
-        #initializing  a question answer chain
-        question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
-
-        #query retrieval chain
-        chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
-
-        #retrieve answer
-        response = chain.invoke({"question": query})
-        logger.info("Response successfully generated")
-        return response["answer"]
-
+        return vector_store
+    
     except Exception as e:
-        logger.error(f"Error occurred in generating response:{e}")
-        return "Sorry, I couldn't process your request at the moment."
+        logger.exception(f"An error occurred while initializing the vector store: {e}")
 
 
 # Sidebar configuration for file uploads
@@ -152,19 +150,11 @@ with st.sidebar:
 
 
 def send_response(message, response=None):
-    # dummy_response = "Hello. How are you?"
-    # st.session_state.messages.append(('assistant', response or dummy_response))
+    dummy_response = "Hello. How are you?"
+    st.session_state.messages.append(('assistant', response or dummy_response))
     # TODO: make async ??
-    vector_store = st.session_state['vector_store']
-
-    # Get the response from query_response
-    answer = query_response(message, vector_store)
-
-    # Append the assistant's response to messages
-    st.session_state.messages.append(('assistant', answer))
-
-    print(answer)
-    synthesize_speech(text=answer)
+    print(response or dummy_response)
+    synthesize_speech(text=response or dummy_response)
     
 
 # Chat area and audio input handling
@@ -194,9 +184,8 @@ def handle_audio_message():
         speech_text = transcribe_audio("audio.wav")
         if speech_text:
             st.session_state.messages.append(("user", speech_text))
-            #send_response(speech_text, "You have a great voice")
-            send_response(speech_text)
-            logging.info("Audio transcribed and response generated successfully.")
+            send_response(speech_text, "You have a great voice")
+            logging.info("Audio transcribed successfully.")
         else:
             # st.session_state.messages.append(("assistant", ))
             send_response(speech_text, "Sorry, I couldn't transcribe your audio. Please try again.")
