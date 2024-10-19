@@ -76,20 +76,24 @@ def synthesize_speech(text, output_file="output.wav", voice_name='en-NG-EzinneNe
     """
     if not SPEECH_KEY or not SPEECH_REGION:
         return False, "Azure Speech Service credentials are missing."
+    
+    path = "speech_outputs"
+    os.makedirs(path, exist_ok=True)
+    output_file = os.path.join(path, output_file)
 
     output = open(output_file, 'w+')
     output.close()
     
     try:
         # Configure speech service
-        speech_config = speechsdk.SpeechConfig(subscription=SPEECH_KEY, region=SPEECH_REGION)
-        # audio_config = speechsdk.audio.AudioOutputConfig(filename=output_file)
+        speech_config = speechsdk.SpeechConfig(subscription=SPEECH_KEY, region=SPEECH_REGION)   
+        audio_config = speechsdk.audio.AudioOutputConfig(filename=output_file)
         
         # Set the voice for synthesis
         speech_config.speech_synthesis_voice_name = voice_name
         
         # Create synthesizer and generate speech
-        speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
+        speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
         result = speech_synthesizer.speak_text_async(text).get()
         
         # Handle the result
