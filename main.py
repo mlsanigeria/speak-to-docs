@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from src.speech_io import transcribe_audio, synthesize_speech
 from src.rag_functions import (allowed_files, file_check_num, 
                                extract_contents_from_doc, chunk_document, logger)
-from langchain.embeddings import OpenAIEmbeddings
+from langchain.embeddings import OpenAIEmbeddings, AzureOpenAIEmbeddings
 from langchain_community.vectorstores import DocArrayInMemorySearch
 from langchain.schema import Document
 from langchain.chat_models import ChatOpenAI
@@ -66,8 +66,10 @@ def create_vector_store(extracted_file_paths):
     """
     try:
         #OpenAI Embedding settings
-        openai_embeddings = OpenAIEmbeddings(
+        openai_embeddings = AzureOpenAIEmbeddings(
                 openai_api_version=os.getenv("OPENAI_API_VERSION"), 
+                chunk_size= 1024,
+                validate_base_url=True, # Explicitly provide validate_base_url
                 openai_api_key=os.getenv("API_KEY"),
                 openai_api_base=os.getenv("ENDPOINT"), 
                 openai_api_type="azure",
