@@ -3,8 +3,11 @@ import os
 import logging
 from dotenv import load_dotenv
 from src.speech_io import transcribe_audio, synthesize_speech
-from src.rag_functions import allowed_files, file_check_num, extract_contents_from_doc
-from langchain.chains import RetrievalQA
+from src.rag_functions import (allowed_files, file_check_num, 
+                               extract_contents_from_doc, chunk_document, logger)
+from langchain.embeddings import OpenAIEmbeddings
+from langchain_community.vectorstores import DocArrayInMemorySearch
+from langchain.schema import Document
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 import openai
@@ -29,13 +32,13 @@ def get_llm() -> ChatOpenAI:
         openai.api_type = "azure"
         openai.api_version = os.getenv("OPENAI_API_VERSION")
         
-        # OpenAI Settings
-        openai_embeddings = OpenAIEmbeddings(
-            openai_api_version=os.getenv("OPENAI_API_VERSION"), 
-            openai_api_key=os.getenv("API_KEY"),
-            openai_api_base=os.getenv("ENDPOINT"), 
-            openai_api_type="azure"
-        )
+        # # OpenAI Settings
+        # openai_embeddings = OpenAIEmbeddings(
+        #     openai_api_version=os.getenv("OPENAI_API_VERSION"), 
+        #     openai_api_key=os.getenv("API_KEY"),
+        #     openai_api_base=os.getenv("ENDPOINT"), 
+        #     openai_api_type="azure"
+        # )
         
         llm = ChatOpenAI(
             temperature=0.3, openai_api_key=os.getenv("API_KEY"), 
@@ -50,6 +53,49 @@ def get_llm() -> ChatOpenAI:
         return None
 
 llm = get_llm()
+
+#function to embed the chunks created on docs and initializing a vector store
+def create_vector_store(extracted_file_paths):
+    """
+    Embeds the documents and initializes a DocArrayInMemorySearch vector store.
+
+    Args:
+        extracted_file_path: A path containing the contents extracted from the documents uploaded
+
+    Returns:
+        DocArrayInMemorySearch: An initialized vector store with embedded documents.
+    """
+    try:
+        #OpenAI Embedding settings
+        openai_embeddings = OpenAIEmbeddings(
+                openai_api_version=os.getenv("OPENAI_API_VERSION"), 
+                openai_api_key=os.getenv("API_KEY"),
+                openai_api_base=os.getenv("ENDPOINT"), 
+                openai_api_type="azure",
+                deployment="text-embedding-ada-002"
+            )
+        logger.info("OpenAI Embeddings initialized successfully.")
+        docs = []
+        for file_path in extracted_file_paths:
+            try:
+                with open(file_path, "r", encoding="utf-8") as file:
+                    text = file.read()
+                chunks = chunk_document(text)
+                docs.extend([Document(page_content=chunk) for chunk in chunks])
+                logger.info(f"Document {file_path} chunked into {len(chunks)} chunks.")
+            except Exception as e:
+                logger.error(f"Error reading or chunking file '{file_path}': {e}")
+                continue
+
+        #initializing the vector store
+        vector_store = DocArrayInMemorySearch.from_documents(docs, openai_embeddings)
+        logger.info("DocArrayInMemorySearch vector store initialized successfully.")
+
+        return vector_store
+    
+    except Exception as e:
+        logger.exception(f"An error occurred while initializing the vector store: {e}")
+
 
 # Sidebar configuration for file uploads
 if 'uploaded_files' not in st.session_state:
@@ -88,8 +134,11 @@ with st.sidebar:
             if valid_file and valid_files:
                 try:
                     extraction_results = extract_contents_from_doc(valid_files, "temp_dir")
-                    st.success(f"{len(st.session_state.uploaded_files)} file(s) uploaded and processed successfully.")
-                    logging.info("File(s) uploaded and processed successfully.")
+                    vector_store = create_vector_store(extraction_results)
+                    if vector_store:
+                        st.session_state['vector_store'] = vector_store
+                        st.success(f"{len(st.session_state.uploaded_files)} file(s) uploaded and processed successfully.")
+                        logging.info("File(s) uploaded and processed successfully.")
                 except Exception as e:
                     st.error("An error occurred while processing your document. Please try again.")
                     logging.error(f"Error extracting content from document: {e}")

@@ -117,3 +117,4 @@ The project is structured as follows:
 7. [Azure OpenAI Models: Deployment](https://learn.microsoft.com/azure/ai-services/openai/how-to/working-with-models?tabs=powershell?wt.mc_id=studentamb_405806)
 8. [Azure Speech Service documentation](https://learn.microsoft.com/en-us/azure/ai-services/speech-service/?wt.mc_id=studentamb_217190)
 9. [Develop Generative AI solutions with Azure OpenAI Service](https://learn.microsoft.com/en-us/training/paths/develop-ai-solutions-azure-openai/?wt.mc_id=studentamb_217190)
+10. [Langchain's DocArrayInMemoryStore Documentation](https://python.langchain.com/docs/integrations/vectorstores/docarray_in_memory/)
