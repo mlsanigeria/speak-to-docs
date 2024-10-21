@@ -8,6 +8,7 @@ from langchain.chains import RetrievalQA
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 import openai
+import uuid
 
 # Set up page configuration
 st.set_page_config(page_title="Speak-To-Docs", page_icon="📝", layout="wide", initial_sidebar_state="expanded")
@@ -94,14 +95,21 @@ with st.sidebar:
                     logging.error(f"Error extracting content from document: {e}")
     else:
         st.session_state.uploaded_files = None
-
+        
+    st.subheader("Speech output responses")
+    if 'speech_outputs' in st.session_state:
+        for speech_output in st.session_state.speech_outputs:
+            st.audio(os.path.join('speech_outputs', speech_output), format="audio/wav", start_time=0)
 
 def send_response(message, response=None):
     dummy_response = "Hello. How are you?"
     st.session_state.messages.append(('assistant', response or dummy_response))
+    
     # TODO: make async ??
-    print(response or dummy_response)
-    synthesize_speech(text=response or dummy_response)
+    # generate unique file name
+    output_file = uuid.uuid4().hex + ".wav"
+    synthesize_speech(output_file=output_file, text=response or dummy_response)
+    st.session_state.speech_outputs.append(output_file)
     
 
 # Chat area and audio input handling
@@ -115,6 +123,9 @@ def send_message():
 
 if 'messages' not in st.session_state:
     st.session_state.messages = []
+    
+if 'speech_outputs' not in st.session_state:
+    st.session_state.speech_outputs = []
 
 message = st.container()
 
