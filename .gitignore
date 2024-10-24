@@ -12,3 +12,4 @@ pyvenv.cfg
 *.venv/
 *.wav
 speech_outputs/
+temp_dir/
