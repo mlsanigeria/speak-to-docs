@@ -12,6 +12,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 import openai
 import uuid
+import time
 
 # Set up page configuration
 st.set_page_config(page_title="Speak-To-Docs", page_icon="📝", layout="wide", initial_sidebar_state="expanded")
@@ -95,6 +96,37 @@ def create_vector_store(extracted_file_paths):
     
     except Exception as e:
         logger.exception(f"An error occurred while initializing the vector store: {e}")
+
+def check_session_timeout():
+    if 'last_activity' not in st.session_state:
+        st.session_state.last_activity = time.time()
+    elif time.time() - st.session_state.last_activity > 3600:  # 1 hour timeout
+        st.session_state.clear()
+    st.session_state.last_activity = time.time()
+
+def process_user_input(user_input, vector_store):
+    check_session_timeout()
+    
+    # Add user input to conversation history
+    st.session_state.conversation_history.append({"role": "user", "content": user_input})
+    
+    # Perform RAG query
+    docs = vector_store.similarity_search(user_input)
+    context = "\n".join([doc.page_content for doc in docs])
+    
+    # Prepare prompt with conversation history and context
+    prompt = f"Conversation history:\n"
+    for message in st.session_state.conversation_history[-5:]:  # Include last 5 messages
+        prompt += f"{message['role']}: {message['content']}\n"
+    prompt += f"\nContext:\n{context}\n\nUser: {user_input}\nAI:"
+    
+    # Generate response using the LLM
+    response = llm.generate(prompt)
+    
+    # Add AI response to conversation history
+    st.session_state.conversation_history.append({"role": "ai", "content": response})
+    
+    return response
 
 
 # Sidebar configuration for file uploads
