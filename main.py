@@ -7,6 +7,8 @@ from src.rag_functions import (allowed_files, file_check_num,
                                extract_contents_from_doc, chunk_document, logger)
 from langchain.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import DocArrayInMemorySearch
+from langchain.chains.retrieval_qa.base import RetrievalQA
+from langchain.prompts import PromptTemplate
 from langchain.schema import Document
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
@@ -96,6 +98,61 @@ def create_vector_store(extracted_file_paths):
     except Exception as e:
         logger.exception(f"An error occurred while initializing the vector store: {e}")
 
+def query_response(query:str, vector_store, llm):
+    """
+    Generates a response to the user's query using the vector store and language model.
+    Utilizes LangChain's retrieval library: RetrievalQA.
+
+    Args:
+        query (str): The user's input query.
+        vector_store (DocArrayInMemorySearch): The initialized vector store.
+        llm (BaseLLM): The language model to generate responses.
+        choice_k (int, optional): Number of chunks to retrieve for similarity search. Default is 3.
+
+    Returns:
+        str: The generated response, or a message if an error occurred.
+    """
+    try:
+        #prompting for the llm 
+        prompt_template = """Use the following excerpts to answer a query. If you can't find the answer from the provided document,
+            don't try to make up an answer. Just say "I can't find the answer from the provided document. You can try to upload a more detailed document."
+
+    Context: {context}
+
+    Question: {question}
+
+    Helpful Answer:
+    """
+        # Check if response for this query already exists in session_state cache
+        if "query_history" not in st.session_state:
+            st.session_state["query_history"] = {}
+
+        # If query is cached, return the cached response
+        if query in st.session_state["query_history"]:
+            return st.session_state["query_history"][query]
+        
+        prompt = PromptTemplate(
+        template=prompt_template, input_variables=["context", "question"]
+        )
+
+        retrieval_chain = RetrievalQA.from_chain_type(
+            llm = llm,
+            chain_type= "stuff",
+            retriever = vector_store.as_retriever(search_type ="similarity",search_kwargs={"k": 3}),
+            #return_source_documents=True,
+            chain_type_kwargs={"prompt": prompt}
+        )
+        
+        response = retrieval_chain.invoke({"query":query})
+        # Cache the response in session_state to optimize future queries
+        st.session_state["query_history"][query] = response
+
+        return response["result"]
+
+    except Exception as e:
+        logger.error(f"Error occurred in generating response:{e}")
+        return "Sorry, I couldn't process your request at the moment."
+
 
 # Sidebar configuration for file uploads
 if 'uploaded_files' not in st.session_state:
@@ -161,14 +218,22 @@ with st.sidebar:
         for speech_output in st.session_state.speech_outputs:
             st.audio(os.path.join('speech_outputs', speech_output), format="audio/wav", start_time=0)
 
-def send_response(message, response=None):
-    dummy_response = "Hello. How are you?"
-    st.session_state.messages.append(('assistant', response or dummy_response))
+def send_response(query, response=None):
+    # dummy_response = "Hello. How are you?"
+    # st.session_state.messages.append(('assistant', response or dummy_response))
+    """
+    Sends a response to the user by querying the RAG chain and converting it to speech.
+    """
+    if response is None:
+        # Use the RAG query function to get a response based on user input
+        response = query_response(query, vector_store=vector_store, llm=llm)
     
+    # Append the generated response to the chat history
+    st.session_state.messages.append(('assistant', response))
     # TODO: make async ??
     # generate unique file name
     output_file = uuid.uuid4().hex + ".wav"
-    synthesize_speech(output_file=output_file, text=response or dummy_response)
+    synthesize_speech(output_file=output_file, text=response)
     st.session_state.speech_outputs.append(output_file)
     
 
@@ -202,7 +267,7 @@ def handle_audio_message():
         speech_text = transcribe_audio("audio.wav")
         if speech_text:
             st.session_state.messages.append(("user", speech_text))
-            send_response(speech_text, "You have a great voice")
+            send_response(speech_text)
             logging.info("Audio transcribed successfully.")
         else:
             # st.session_state.messages.append(("assistant", ))
