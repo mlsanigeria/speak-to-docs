@@ -6,15 +6,12 @@ from src.speech_io import transcribe_audio, synthesize_speech
 from src.rag_functions import (allowed_files, file_check_num,
                                extract_contents_from_doc, chunk_document, logger)
 from langchain.embeddings import OpenAIEmbeddings
-from langchain_core.messages import HumanMessage
 from langchain_community.vectorstores import DocArrayInMemorySearch
 from langchain.schema import Document
 from langchain.chat_models import AzureChatOpenAI
 # from langchain.llms import Open
 # from langchain.prompts import HumanMessagePromptTemplate
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.prompts import ChatMessagePromptTemplate
-from langchain_core.output_parsers import StrOutputParser
 from langchain_core.vectorstores import VectorStoreRetriever
 from langchain.chains import RetrievalQA
 
