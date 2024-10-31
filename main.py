@@ -100,7 +100,6 @@ def create_vector_store(extracted_file_paths):
 # Sidebar configuration for file uploads
 if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = None
-    st.session_state.uploaded_files_bool = False
     st.session_state['prev_uploaded_files'] = []
 
 with st.sidebar:
