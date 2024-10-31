@@ -13,6 +13,11 @@ from langchain.chat_models import AzureChatOpenAI
 # from langchain.llms import Open
 # from langchain.prompts import HumanMessagePromptTemplate
 from langchain.embeddings import OpenAIEmbeddings
+from langchain.prompts import ChatMessagePromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.vectorstores import VectorStoreRetriever
+from langchain.chains import RetrievalQA
+
 import openai
 # from openai import AzureOpenAI  
 import uuid
@@ -53,7 +58,7 @@ def get_llm() -> AzureChatOpenAI:
             openai_api_key=os.getenv("API_KEY"),
             openai_api_type="azure",
             azure_endpoint=os.getenv("ENDPOINT"), 
-            deployment_name=os.getenv("OPENAI_DEPLOYMENT", "gpt-35-turbo"), 
+            deployment_name="gpt-35-turbo", 
             engine="Voicetask"
         )
 
@@ -69,13 +74,18 @@ def get_llm() -> AzureChatOpenAI:
 llm = get_llm()
 
 
-def create_chat_completion(llm, prompt):
-    # print(llm.generate([HumanMessage(prompt)]))
-    return llm.predict(prompt)
+def create_chat_completion(llm, chat_message: str) -> str:
+    if not st.session_state['vector_store']:
+        st.error("Please upload a document to initialize the vector store.")
+        return "Please upload a document to initialize the vector store."
+    
+    retriever = VectorStoreRetriever(vectorstore=st.session_state['vector_store'])
+    retrievalQA = RetrievalQA.from_llm(llm=llm, retriever=retriever)
+
+    return retrievalQA.invoke(chat_message)['result']
+
 
 # function to embed the chunks created on docs and initializing a vector store
-
-
 def create_vector_store(extracted_file_paths):
     """
     Embeds the documents and initializes a DocArrayInMemorySearch vector store.
@@ -87,6 +97,7 @@ def create_vector_store(extracted_file_paths):
         DocArrayInMemorySearch: An initialized vector store with embedded documents.
     """
     try:
+        print("Creating vector store", extracted_file_paths)
         # OpenAI Embedding settings
         openai_embeddings = OpenAIEmbeddings(
             openai_api_version=os.getenv("OPENAI_API_VERSION"),
@@ -95,6 +106,7 @@ def create_vector_store(extracted_file_paths):
             openai_api_type="azure",
             deployment=os.getenv("OPENAI_DEPLOYMENT", "text-embedding-ada-002")
         )
+        
         logger.info("OpenAI Embeddings initialized successfully.")
         docs = []
         for file_path in extracted_file_paths:
@@ -126,6 +138,7 @@ def create_vector_store(extracted_file_paths):
 # Sidebar configuration for file uploads
 if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = None
+    st.session_state['vector_store'] = None
 
 with st.sidebar:
     st.subheader("Upload your document")
