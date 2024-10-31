@@ -58,7 +58,7 @@ def get_llm() -> AzureChatOpenAI:
             openai_api_key=os.getenv("API_KEY"),
             openai_api_type="azure",
             azure_endpoint=os.getenv("ENDPOINT"), 
-            deployment_name="gpt-35-turbo", 
+            deployment_name=os.getenv("OPENAI_CHAT_DEPLOYMENT", "gpt-35-turbo"), 
             engine="Voicetask"
         )
 
