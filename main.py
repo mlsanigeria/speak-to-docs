@@ -53,7 +53,7 @@ def get_llm() -> AzureChatOpenAI:
             openai_api_key=os.getenv("API_KEY"),
             openai_api_type="azure",
             azure_endpoint=os.getenv("ENDPOINT"), 
-            deployment_name="gpt-35-turbo", 
+            deployment_name=os.getenv("OPENAI_DEPLOYMENT", "gpt-35-turbo"), 
             engine="Voicetask"
         )
 
@@ -93,7 +93,7 @@ def create_vector_store(extracted_file_paths):
             openai_api_key=os.getenv("API_KEY"),
             openai_api_base=os.getenv("ENDPOINT"),
             openai_api_type="azure",
-            deployment="text-embedding-ada-002"
+            deployment=os.getenv("OPENAI_DEPLOYMENT", "text-embedding-ada-002")
         )
         logger.info("OpenAI Embeddings initialized successfully.")
         docs = []
