@@ -4,12 +4,14 @@ import logging
 from dotenv import load_dotenv
 from src.speech_io import transcribe_audio, synthesize_speech
 from src.rag_functions import (allowed_files, file_check_num, 
-                               extract_contents_from_doc, chunk_document, logger)
+                               extract_contents_from_doc, chunk_document, logger, get_conversation_summary)
 from langchain.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import DocArrayInMemorySearch
 from langchain.schema import Document
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
+from langchain.memory import ConversationBufferWindowMemory
+from langchain import PromptTemplate
 import openai
 import uuid
 
@@ -96,6 +98,29 @@ def create_vector_store(extracted_file_paths):
     except Exception as e:
         logger.exception(f"An error occurred while initializing the vector store: {e}")
 
+# Prompt Template
+prompt = """
+Use the following context (delimited by <ctx></ctx>) and the chat history (delimited by <hs></hs>) to answer the user's question. 
+If you don't know the answer, just say that you don't know, don't try to make up an answer.
+------
+<ctx>
+{context}
+</ctx>
+------
+<hs>
+{history}
+</hs>
+------
+{question}
+Answer:
+"""
+prompt = PromptTemplate(
+    input_variables=["history", "context", "question"],
+    template=prompt,
+)
+
+# Retrieval QA
+from langchain.chains import RetrievalQA
 
 # Sidebar configuration for file uploads
 if 'uploaded_files' not in st.session_state:
@@ -149,6 +174,25 @@ with st.sidebar:
                             st.session_state['vector_store'] = vector_store
                             st.success(f"{len(uploaded_files)} file(s) uploaded and processed successfully.")
                             logging.info("File(s) uploaded and processed successfully.")
+                        
+                        # Initialize session state for qa_stuff
+                        if 'qa_stuff' not in st.session_state:
+                            retriever = vector_store.as_retriever(search_kwargs={'k': 3})
+                            st.session_state.qa_stuff = RetrievalQA.from_chain_type(
+                                                            llm = llm, 
+                                                            chain_type = "stuff", 
+                                                            retriever = retriever, 
+                                                            verbose = False,
+                                                            chain_type_kwargs = {
+                                                                "verbose": True,
+                                                                "prompt": prompt,
+                                                                "memory": ConversationBufferWindowMemory(
+                                                                        k = 10,
+                                                                        memory_key = "history",
+                                                                        input_key = "question")
+                                                                        }
+                                                            )
+
                     except Exception as e:
                         st.error("An error occurred while processing your document. Please try again.")
                         logging.error(f"Error extracting content from document: {e}")
@@ -162,7 +206,25 @@ with st.sidebar:
             st.audio(os.path.join('speech_outputs', speech_output), format="audio/wav", start_time=0)
 
 def send_response(message, response=None):
-    dummy_response = "Hello. How are you?"
+    dummy_response = None
+    if 'qa_stuff' not in st.session_state:
+        dummy_response = "Kindly upload a document for me to use as context."
+
+    if not response and not dummy_response:
+        # # Advanced RAG Model
+        # full_history = ""
+        # for role, text in st.session_state.messages[:10]:
+        #     full_history += "Human: " + text + "\n" if role == "user" else "AI: " + text + "\n"
+
+        # # full_history = st.session_state.history
+        # print("Full History: ", st.session_state.messages)
+        # print("History: ", full_history)
+        # if len(st.session_state.messages) > 0:
+        #     message = get_conversation_summary(full_history, message)
+  
+
+        response = st.session_state.qa_stuff.run(message)
+        
     st.session_state.messages.append(('assistant', response or dummy_response))
     
     # TODO: make async ??
@@ -202,7 +264,7 @@ def handle_audio_message():
         speech_text = transcribe_audio("audio.wav")
         if speech_text:
             st.session_state.messages.append(("user", speech_text))
-            send_response(speech_text, "You have a great voice")
+            send_response(speech_text)
             logging.info("Audio transcribed successfully.")
         else:
             # st.session_state.messages.append(("assistant", ))
