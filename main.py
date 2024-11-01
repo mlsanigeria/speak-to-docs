@@ -107,7 +107,6 @@ def query_response(query:str, vector_store, llm):
         query (str): The user's input query.
         vector_store (DocArrayInMemorySearch): The initialized vector store.
         llm (BaseLLM): The language model to generate responses.
-        choice_k (int, optional): Number of chunks to retrieve for similarity search. Default is 3.
 
     Returns:
         str: The generated response, or a message if an error occurred.
