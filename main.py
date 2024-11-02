@@ -18,6 +18,9 @@ import uuid
 # Set up page configuration
 st.set_page_config(page_title="Speak-To-Docs", page_icon="📝", layout="wide", initial_sidebar_state="expanded")
 
+# Set the page title
+st.title("Speak-To-Docs 🔊📝")
+
 # Configure logging
 logging.basicConfig(filename='app.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
 

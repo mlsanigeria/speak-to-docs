@@ -85,11 +85,12 @@ def file_check_num(uploaded_file):
 
 
 
-def chunk_document(text, chunk_size=1000, chunk_overlap=200):
+def chunk_document(text, chunk_size=1000, chunk_overlap=300):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
         length_function=len,
+        separators=["\n", " ", "?", ".", "!"]
     )
     chunks = text_splitter.split_text(text)
     return chunks
