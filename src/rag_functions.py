@@ -125,28 +125,47 @@ def extract_contents_from_doc(files, temp_dir):
     extracted_file_paths = []
 
     for file in files:
+        filename = secure_filename(file.name)
+        base, ext = os.path.splitext(filename)
+        ext = ext.lower()  # Normalize to lowercase for easier checking
+        
         try:
-            # Read file content
-            file_content = file.read()
-            logger.info(f"Processing file: {file.name}")
+            if ext == '.pdf':
+                # Extract content using Azure Document Intelligence for PDF
+                file_content = file.read()
+                logger.info(f"Processing PDF file: {file.name}")
+                extract = document_intelligence_client.begin_analyze_document("prebuilt-read", file_content)
+                result = extract.result()
                 
-            # Perform content extraction using Azure's "prebuilt-read" model
-            extract = document_intelligence_client.begin_analyze_document("prebuilt-read", file_content)
-            result = extract.result()
-            logger.info(f"OCR completed for file: {file.name}")
-
-            # Extract content from each page
-            extracted_content = ""
-            for page in result.pages:
-                for line in page.lines:
-                    extracted_content += line.content + "\n"
+                # Extract text from each page
+                extracted_content = ""
+                for page in result.pages:
+                    for line in page.lines:
+                        extracted_content += line.content + "\n"
+                
+            elif ext == '.txt':
+                # Directly read .txt files
+                logger.info(f"Processing TXT file: {file.name}")
+                extracted_content = file.read().decode('utf-8')
+                
+            elif ext == '.pptx':
+                # Extract content from .pptx using python-pptx
+                logger.info(f"Processing PPTX file: {file.name}")
+                extracted_content = ""
+                presentation = Presentation(file)
+                for slide in presentation.slides:
+                    for shape in slide.shapes:
+                        if hasattr(shape, "text"):
+                            extracted_content += shape.text + "\n"
             
-            # Secure the filename and define a path for saving extracted content
-            filename = secure_filename(file.name)
-            base, ext = os.path.splitext(filename)
+            else:
+                logger.warning(f"Unsupported file type: {file.name}")
+                continue  # Skip unsupported file types
+            
+            # Define path to save extracted content
             extracted_filename = f"{base}_extracted.txt"  # Save as .txt for easier reading
             file_path = os.path.join(temp_dir, extracted_filename)
-
+            
             # Save the extracted content to a file
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(extracted_content)
